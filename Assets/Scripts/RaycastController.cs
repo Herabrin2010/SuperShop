@@ -44,16 +44,33 @@ public class RaycastController : MonoBehaviour
             if (Input.GetKeyDown(KeyCode.E))
             {
                 takenItem = hit.collider.gameObject.GetComponent<InformationAboutObject>();
-                inventoryController.SearchingFreeSlot(takenItem._name, takenItem._sprite);
-                Destroy(hit.collider.gameObject);
+                inventoryController.SearchingFreeSlot(takenItem._name, takenItem._sprite, hit.collider.gameObject);
                 help.gameObject.SetActive(false);
                 takenItem = null;
                 lastHitObject = null;
             }
         }
+
+        if (hitSomething && hit.collider.CompareTag("Trashcan"))
+        {
+            if (lastHitObject != hit.collider.gameObject)
+            {
+                if (lastHitObject != null)
+                {
+                    help.gameObject.SetActive(false);
+                }
+
+                help.gameObject.SetActive(true);
+                lastHitObject = hit.collider.gameObject;
+            }
+            if (Input.GetKeyDown(KeyCode.E))
+            {
+                inventoryController.ResetSlots();
+            }
+        }
+
         else
         {
-            // Если ничего не задели, но текст был включен
             if (lastHitObject != null)
             {
                 help.gameObject.SetActive(false);

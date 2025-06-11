@@ -3,6 +3,7 @@ using UnityEngine.UI;
 
 public class SlotInformation : MonoBehaviour
 {
+
     public string SlotName;
     public Sprite SloteSprite;
     public bool FreeSlot = true;
@@ -15,6 +16,14 @@ public class SlotInformation : MonoBehaviour
 
         transform.GetChild(0).GetComponent<Image>().sprite = SloteSprite;
 
-        Debug.Log("1111");
+    }
+
+    public void ResetInformation()
+    {
+        FreeSlot=false;
+        SlotName = "";
+        SloteSprite=null;
+        transform.GetChild(0).GetComponent<Image>().sprite = SloteSprite;
+        Debug.Log("111");
     }
 }
