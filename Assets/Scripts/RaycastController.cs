@@ -1,81 +1,124 @@
-using TMPro;
 using UnityEngine;
+using TMPro;
 
 public class RaycastController : MonoBehaviour
 {
-    [SerializeField] private Camera _camera;
-    [SerializeField] float distance;
-    [SerializeField] TextMeshProUGUI help;
+    [Header("Настройки")]
+    public Camera playerCamera;
+    public float interactionDistance = 3f;
+    public TextMeshProUGUI interactionText;
 
-    private InformationAboutObject takenItem;
-    public InventoryController inventoryController;
+    [Header("Ссылки")]
+    private InventoryController inventoryController;
+    private KeyRebinder inputSystem;
+    private Tasks tasks;
 
-    private GameObject lastHitObject; // Для отслеживания последнего задетого объекта
+    private GameObject currentTarget;
 
-    public  void Start()
+    private void Start()
     {
-        help.gameObject.SetActive(false);
+        if (playerCamera == null) playerCamera = Camera.main;
+        if (interactionText != null) interactionText.gameObject.SetActive(false);
+
+        inventoryController = FindObjectOfType<InventoryController>();
+        inputSystem = FindObjectOfType<KeyRebinder>();
+        tasks = FindObjectOfType<Tasks>();
+
+        if (inventoryController == null) Debug.LogError("InventoryController not found!");
+        if (inputSystem == null) Debug.LogError("KeyRebinder not found!");
+        if (tasks == null) Debug.LogError("Tasks component not found!");
     }
 
-    public void Update()
+    private void Update()
     {
-        Ray ray = _camera.ScreenPointToRay(new Vector3(Screen.width / 2, Screen.height / 2, 0));
-        Debug.DrawRay(Camera.main.transform.position, Camera.main.transform.forward * 3, Color.red);
-        RaycastHit hit;
-        bool hitSomething = Physics.Raycast(ray, out hit, distance);
+        PerformRaycast();
+        CheckForInteraction();
+    }
 
-        if (hitSomething && hit.collider.CompareTag("Obj"))
+    private void PerformRaycast()
+    {
+        Ray ray = playerCamera.ViewportPointToRay(new Vector3(0.5f, 0.5f, 0));
+        if (Physics.Raycast(ray, out var hit, interactionDistance))
         {
-            // Если навели на новый объект (отличается от предыдущего)
-            if (lastHitObject != hit.collider.gameObject)
-            {
-                // Выключаем текст, если был другой объект
-                if (lastHitObject != null)
-                {
-                    help.gameObject.SetActive(false);
-                }
-
-                // Включаем текст для нового объекта
-                help.gameObject.SetActive(true);
-                lastHitObject = hit.collider.gameObject;
-            }
-
-            // Действие по нажатию E
-            if (Input.GetKeyDown(KeyCode.E))
-            {
-                takenItem = hit.collider.gameObject.GetComponent<InformationAboutObject>();
-                inventoryController.SearchingFreeSlot(takenItem._name, takenItem._sprite, hit.collider.gameObject);
-                help.gameObject.SetActive(false);
-                takenItem = null;
-                lastHitObject = null;
-            }
+            HandleNewTarget(hit.collider.gameObject);
         }
-
-        if (hitSomething && hit.collider.CompareTag("Trashcan"))
-        {
-            if (lastHitObject != hit.collider.gameObject)
-            {
-                if (lastHitObject != null)
-                {
-                    help.gameObject.SetActive(false);
-                }
-
-                help.gameObject.SetActive(true);
-                lastHitObject = hit.collider.gameObject;
-            }
-            if (Input.GetKeyDown(KeyCode.E))
-            {
-                inventoryController.ResetSlots();
-            }
-        }
-
         else
         {
-            if (lastHitObject != null)
-            {
-                help.gameObject.SetActive(false);
-                lastHitObject = null;
-            }
+            ClearCurrentTarget();
         }
+    }
+
+    private void HandleNewTarget(GameObject newTarget)
+    {
+        if (newTarget == currentTarget) return;
+        ClearCurrentTarget();
+        currentTarget = newTarget;
+
+        switch (currentTarget.tag)
+        {
+            case "Obj":
+                ShowInteractionPrompt($"Нажмите E чтобы взять {currentTarget.name}");
+                break;
+            case "Trashcan":
+                ShowInteractionPrompt("Нажмите E чтобы очистить инвентарь");
+                break;
+        }
+    }
+
+    private void ShowInteractionPrompt(string message)
+    {
+        if (interactionText != null)
+        {
+            interactionText.text = message;
+            interactionText.gameObject.SetActive(true);
+        }
+    }
+
+    private void ClearCurrentTarget()
+    {
+        if (currentTarget != null && interactionText != null)
+        {
+            interactionText.gameObject.SetActive(false);
+        }
+        currentTarget = null;
+    }
+
+    private void CheckForInteraction()
+    {
+        if (inputSystem != null && inputSystem.GetActionDown("Interaction") && currentTarget != null)
+        {
+            ProcessInteraction();
+        }
+    }
+
+    private void ProcessInteraction()
+    {
+        if (currentTarget == null) return;
+
+        switch (currentTarget.tag)
+        {
+            case "Obj":
+                PickUpItem();
+                break;
+            case "Trashcan":
+                ClearInventory();
+                break;
+        }
+        ClearCurrentTarget();
+    }
+
+    private void PickUpItem()
+    {
+        var itemInfo = currentTarget.GetComponent<InformationAboutObject>();
+        if (itemInfo != null && inventoryController != null)
+        {
+            bool itemAdded = inventoryController.AddItemToInventory(itemInfo.gameObject, currentTarget);
+            if (itemAdded) Debug.Log($"Предмет {itemInfo._name} добавлен в инвентарь");
+        }
+    }
+
+    private void ClearInventory()
+    {
+        inventoryController?.ResetSlots(true);
     }
 }

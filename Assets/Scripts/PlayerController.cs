@@ -1,109 +1,148 @@
+using Unity.VisualScripting;
 using UnityEngine;
 
 public class PlayerController : MonoBehaviour
 {
-    private Vector2 CameraMovement;
-    public Camera Camera;
-
-    private float Horizontal;
-    private float Vertical;
-
-    private float currentSpeed;
-    [SerializeField] private float walkSpeed;
-    [SerializeField] private float runSpeed;
-    [SerializeField] private float rotationSpeed;
-    [SerializeField] public float gravity;
-    [SerializeField] public float jumpHeight;
-
+    [Header("References")]
+    private KeyRebinder keyRebinder;
     private CharacterController controller;
-    private Vector3 velocity;
-    private bool isGrounded;
-
     private Animator animator;
 
+    [Header("Movement Settings")]
+    [SerializeField] private float walkSpeed = 5f;
+    [SerializeField] private float runSpeed = 8f;
+    [SerializeField] private float gravity = -9.81f;
+    [SerializeField] private float jumpHeight = 1.5f;
+
+    [Header("Camera Settings")]
+    public Camera playerCamera;
+    [SerializeField] private float minVerticalAngle = -80f; // Макс. угол вниз
+    [SerializeField] private float maxVerticalAngle = 80f;  // Макс. угол вверх
+    [SerializeField] private float rotationSpeed = 2f;
+    private float currentCameraRotationX = -180f; // Текущий угол камеры по X
+
+
+
+    private Vector3 movementDirection;
+    private Vector3 velocity;
+    private float currentSpeed;
+    private bool isGrounded;
+    private bool isSprinting;
+
+    [Header("Pause Settings")]
+    [SerializeField] private Pause pauseManager; // Ссылка на скрипт паузы
 
     private void Start()
     {
         controller = GetComponent<CharacterController>();
         animator = GetComponent<Animator>();
+        keyRebinder = FindObjectOfType<KeyRebinder>();
+        pauseManager = FindObjectOfType<Pause>(); // Находим скрипт паузы, если не задан вручную
+
+        currentSpeed = walkSpeed;
     }
+
 
     private void Update()
     {
-        InputKey();
-        Rotation();
+        HandleInput();
+        HandleCameraRotation();
+        UpdateAnimations();
     }
 
     private void FixedUpdate()
     {
-        Vector3 global = new Vector3(Horizontal, 0, Vertical);
-
-        Vector3 local = transform.TransformDirection(global);
-
-
-        transform.Rotate(Vector3.up, CameraMovement.x*rotationSpeed);
-
-        if(Camera.transform.rotation.x < 90 & Camera.transform.rotation.x > -90)
-            Camera.transform.Rotate(-Vector3.right, CameraMovement.y * rotationSpeed);
+        HandleMovement();
+        HandleGravity();
     }
-
-    private void InputKey()
+    private void HandleInput()
     {
         isGrounded = controller.isGrounded;
 
+        // Сброс вертикальной скорости при нахождении на земле
         if (isGrounded && velocity.y < 0)
         {
-            velocity.y = -2f; // Фиксим баг с "залипанием" в земле
+            velocity.y = -2f;
+            animator.ResetTrigger("Jump");
         }
 
-        float horizontalInput = Input.GetAxis("Horizontal");
-        float verticalInput = Input.GetAxis("Vertical");
+        // Обработка спринта
+        isSprinting = keyRebinder.GetAction("Sprint");
+    }
 
-        if (Input.GetKeyDown(KeyCode.W) || Input.GetKeyDown(KeyCode.S) || Input.GetKeyDown(KeyCode.A) || Input.GetKeyDown(KeyCode.D))
+    private void HandleMovement()
+    {
+        movementDirection = Vector3.zero;
+
+        // Движение относительно локальных осей персонажа
+        if (keyRebinder.GetAction("Movement Forward")) movementDirection += transform.forward;
+        if (keyRebinder.GetAction("Movement Back")) movementDirection -= transform.forward;
+        if (keyRebinder.GetAction("Movement Right")) movementDirection += transform.right;
+        if (keyRebinder.GetAction("Movement Left")) movementDirection -= transform.right;
+
+        // Нормализация и применение скорости
+        if (movementDirection != Vector3.zero)
         {
-            animator.ResetTrigger("Idle");
-            animator.SetTrigger("Run");
+            movementDirection.Normalize();
+            currentSpeed = isSprinting ? runSpeed : walkSpeed;
+            controller.Move(movementDirection * currentSpeed * Time.fixedDeltaTime);
         }
-
-        Vector3 move = transform.right * horizontalInput + transform.forward * verticalInput;
-        controller.Move(move * currentSpeed * Time.deltaTime);
 
         // Прыжок
-        if (Input.GetButtonDown("Jump") && isGrounded)
+        if (keyRebinder.GetActionDown("Jump") && isGrounded)
         {
             velocity.y = Mathf.Sqrt(jumpHeight * -2f * gravity);
+            animator.SetTrigger("Jump");
         }
-
-        // Гравитация
-        velocity.y += gravity * Time.deltaTime;
-        controller.Move(velocity * Time.deltaTime);
-
-        if (Input.GetKey(KeyCode.LeftShift))
-        {
-            currentSpeed = runSpeed;
-            animator.SetTrigger("Sprint");
-        }
-        else if (Input.GetKeyUp(KeyCode.LeftShift))
-        {
-            animator.ResetTrigger("Sprint");
-            animator.SetTrigger("Run");
-        }
-        else
-        {
-            currentSpeed = walkSpeed;
-        }
-
-        if (!Input.GetKey(KeyCode.W) && !Input.GetKey(KeyCode.S) && !Input.GetKey(KeyCode.A) && !Input.GetKey(KeyCode.D))
-        {
-            animator.SetTrigger("Idle");
-            animator.ResetTrigger("Run");
-            animator.ResetTrigger("Sprint");
-        }
-
     }
 
-    private void Rotation()
+    private void HandleGravity()
     {
-        CameraMovement = new Vector2(Input.GetAxis("Mouse X"), Input.GetAxis("Mouse Y"));
+        if (!isGrounded)
+        {
+            velocity.y += gravity * Time.fixedDeltaTime;
+            controller.Move(velocity * Time.fixedDeltaTime);
+        }
     }
+
+    private void HandleCameraRotation()
+    {
+        // Если меню паузы активно - не вращаем камеру
+        if (pauseManager != null && pauseManager.IsActive)
+            return;
+
+        // Получаем ввод мыши
+        float mouseX = Input.GetAxis("Mouse X") * rotationSpeed;
+        float mouseY = Input.GetAxis("Mouse Y") * rotationSpeed;
+
+        // Вращение персонажа по горизонтали
+        transform.Rotate(Vector3.up, mouseX);
+
+        // Вращение камеры по вертикали с ограничением
+        currentCameraRotationX -= mouseY;
+        currentCameraRotationX = Mathf.Clamp(
+            currentCameraRotationX,
+            minVerticalAngle,
+            maxVerticalAngle
+        );
+
+        // Применяем поворот камеры
+        playerCamera.transform.localEulerAngles = new Vector3(
+            currentCameraRotationX,
+            0f,
+            0f
+        );
+    }
+
+private void UpdateAnimations()
+    {
+        bool isMoving = movementDirection != Vector3.zero;
+        bool isActuallySprinting = isMoving && isSprinting;
+
+        animator.SetBool("IsMoving", isMoving);
+        animator.SetBool("IsSprinting", isActuallySprinting);
+        animator.SetBool("IsGrounded", isGrounded);
+    }
+
+
 }

@@ -1,0 +1,31 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 67e90a043e8d75144a9e98674a4d77fe, type: 3}
+  m_Name: KeyBindingsConfig
+  m_EditorClassIdentifier: 
+  keyBinds:
+  - actionName: Movement Forward
+    keyCode: 119
+  - actionName: Movement Left
+    keyCode: 97
+  - actionName: Movement Back
+    keyCode: 115
+  - actionName: Movement  Right
+    keyCode: 100
+  - actionName: Sprint
+    keyCode: 306
+  - actionName: Jump
+    keyCode: 32
+  - actionName: Pause
+    keyCode: 27
+  - actionName: Interaction
+    keyCode: 101

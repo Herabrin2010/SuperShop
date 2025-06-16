@@ -1,42 +1,66 @@
-using System.Collections.Generic;
 using UnityEngine;
+using TMPro;
+using System.Collections.Generic;
 
 public class InventoryController : MonoBehaviour
 {
-    public List<GameObject> Slots = new List<GameObject>();
-    int slots = 0;
+    [Header("Настройки")]
+    public List<GameObject> Slots = new();
+    public TextMeshProUGUI inventoryFullText;
 
+    private List<SlotInformation> slots = new();
+    private Tasks tasks;
 
-    public void SearchingFreeSlot(string name, Sprite sprite, GameObject destroyObject)
+    private void Start()
     {
-        foreach (GameObject item in Slots)
+        tasks = FindObjectOfType<Tasks>();
+        foreach (var slot in Slots)
         {
-
-            SlotInformation slot = item.GetComponent<SlotInformation>();
-            if (!slot.FreeSlot)
+            if (slot.TryGetComponent<SlotInformation>(out var slotInfo))
             {
-                slots++;
-                Debug.Log(name);
-                slot.UpdateIcon(name, sprite);
-                Destroy(destroyObject);
-                break;
+                slotInfo.InitializeSlot();
+                slots.Add(slotInfo);
             }
-
-        }
-        if (slots == Slots.Count)
-        {
-            Debug.Log("инвентарь заполнен");
         }
     }
 
-    public void ResetSlots()
+    public bool AddItemToInventory(GameObject itemPrefab, GameObject objectToDestroy)
     {
-        foreach(GameObject item in Slots)
+        foreach (var slot in slots)
         {
-            SlotInformation slot = item.GetComponent<SlotInformation>();
-            
-                slot.ResetInformation();
-            
+            if (slot.IsFree)
+            {
+                var info = itemPrefab.GetComponent<InformationAboutObject>();
+                slot.FillSlot(info._name, info._sprite, itemPrefab);
+                Destroy(objectToDestroy);
+
+                // Проверка задания при подборе
+                tasks?.CheckTaskForItem(itemPrefab);
+                return true;
+            }
         }
+        ShowInventoryFullMessage();
+        return false;
     }
+
+    public void ResetSlots(bool fromTrashcan = false)
+    {
+        if (fromTrashcan)
+        {
+            foreach (var slot in slots)
+            {
+                if (!slot.IsFree)
+                {
+                    // Проверка задания для каждого удаляемого предмета
+                    tasks?.CheckTaskForItem(slot.ItemPrefab);
+                }
+            }
+        }
+
+        foreach (var slot in slots) slot.ClearSlot();
+        HideInventoryFullMessage();
+    }
+
+    private void ShowInventoryFullMessage() => inventoryFullText?.gameObject.SetActive(true);
+    private void HideInventoryFullMessage() => inventoryFullText?.gameObject.SetActive(false);
 }
