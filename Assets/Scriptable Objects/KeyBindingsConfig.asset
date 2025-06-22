@@ -29,3 +29,5 @@ MonoBehaviour:
     keyCode: 27
   - actionName: Interaction
     keyCode: 101
+  - actionName: Admin
+    keyCode: 9

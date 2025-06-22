@@ -6,21 +6,29 @@ public class Tasks : MonoBehaviour
 {
     [Header("Task Settings")]
     [SerializeField] private List<GameObject> itemPrefabs;
-    [SerializeField] private TextMeshProUGUI taskText;
+    [SerializeField] public TextMeshProUGUI taskText;
 
+    [Header ("—сылки")]
+    private AdminPanel adminPanel;
     private InventoryController inventoryController;
-    private string currentTaskName;
-    private GameObject currentTaskPrefab;
-    public bool IsTaskComplete { get; private set; }
+    private Score_Timer score_timer;
+
+    [HideInInspector] public string currentTaskName;
 
     private void Awake()
     {
-        inventoryController = FindObjectOfType<InventoryController>();
+        score_timer = FindAnyObjectByType<Score_Timer>();
+        inventoryController = FindAnyObjectByType<InventoryController>();
+        adminPanel = FindAnyObjectByType<AdminPanel>();
+
         if (inventoryController == null)
             Debug.LogError("InventoryController not found!");
     }
 
-    private void Start() => GenerateNewTask();
+    private void Start()
+    {
+     GenerateNewTask();
+    }
 
     public void GenerateNewTask()
     {
@@ -36,27 +44,14 @@ public class Tasks : MonoBehaviour
         if (itemInfo == null) return;
 
         currentTaskName = itemInfo._name;
-        IsTaskComplete = false;
         UpdateTaskUI();
     }
 
-    public void CheckTaskForItem(GameObject itemPrefab)
+    public void CompleteTask()
     {
-        if (IsTaskComplete || itemPrefab == null) return;
-
-        var itemInfo = itemPrefab.GetComponent<InformationAboutObject>();
-        if (itemInfo != null && itemInfo._name == currentTaskName)
-        {
-            CompleteTask();
-        }
-    }
-
-
-    private void CompleteTask()
-    {
-        IsTaskComplete = true;
-        inventoryController.ResetSlots();
+        score_timer.Price();
         GenerateNewTask();
+        score_timer.IfWin();
     }
 
     private void UpdateTaskUI()

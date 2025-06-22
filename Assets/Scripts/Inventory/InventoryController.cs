@@ -7,13 +7,16 @@ public class InventoryController : MonoBehaviour
     [Header("Настройки")]
     public List<GameObject> Slots = new();
     public TextMeshProUGUI inventoryFullText;
-
     private List<SlotInformation> slots = new();
+
     private Tasks tasks;
+
+    public GameObject inventory;
 
     private void Start()
     {
-        tasks = FindObjectOfType<Tasks>();
+        tasks = FindAnyObjectByType<Tasks>();
+        inventoryFullText.gameObject.SetActive(false);
         foreach (var slot in Slots)
         {
             if (slot.TryGetComponent<SlotInformation>(out var slotInfo))
@@ -22,6 +25,11 @@ public class InventoryController : MonoBehaviour
                 slots.Add(slotInfo);
             }
         }
+    }
+
+    private bool HasItem(SlotInformation slot, string targetItemName)
+    {
+        return !slot.IsFree && slot.ItemName == targetItemName;
     }
 
     public bool AddItemToInventory(GameObject itemPrefab, GameObject objectToDestroy)
@@ -35,32 +43,24 @@ public class InventoryController : MonoBehaviour
                 Destroy(objectToDestroy);
 
                 // Проверка задания при подборе
-                tasks?.CheckTaskForItem(itemPrefab);
                 return true;
             }
         }
-        ShowInventoryFullMessage();
+        inventoryFullText.gameObject.SetActive(true);
         return false;
     }
 
-    public void ResetSlots(bool fromTrashcan = false)
+    public void ResetSlots()
     {
-        if (fromTrashcan)
+        foreach (var slot in slots)
         {
-            foreach (var slot in slots)
+            if (HasItem(slot, tasks.currentTaskName))
             {
-                if (!slot.IsFree)
-                {
-                    // Проверка задания для каждого удаляемого предмета
-                    tasks?.CheckTaskForItem(slot.ItemPrefab);
-                }
+                Debug.Log($"Найден предмет: {tasks.currentTaskName}");
+                tasks.CompleteTask();
             }
+            slot.ClearSlot();
         }
-
-        foreach (var slot in slots) slot.ClearSlot();
-        HideInventoryFullMessage();
+        inventoryFullText.gameObject.SetActive(false);
     }
-
-    private void ShowInventoryFullMessage() => inventoryFullText?.gameObject.SetActive(true);
-    private void HideInventoryFullMessage() => inventoryFullText?.gameObject.SetActive(false);
 }

@@ -12,14 +12,24 @@ public class Pause : MonoBehaviour
     private KeyRebinder keyRebinder;
 
     [SerializeField] private GameObject point;
+    [SerializeField] private GameObject SettingsPanel;
+
+
+    [Header ("Ссылки")]
     private RaycastController raycastController;
     private InventoryController inventoryController;
+    private Tasks tasks;
+    private Score_Timer timer;
+    private PlayerController playerController;
 
     private void Awake()
     {
-        keyRebinder = FindObjectOfType<KeyRebinder>();
-        raycastController = FindObjectOfType<RaycastController>();
-        inventoryController = FindObjectOfType<InventoryController>();
+        tasks = FindAnyObjectByType<Tasks>();
+        keyRebinder = FindAnyObjectByType<KeyRebinder>();
+        raycastController = FindAnyObjectByType<RaycastController>();
+        inventoryController = FindAnyObjectByType<InventoryController>();
+        timer = FindAnyObjectByType<Score_Timer>();
+        playerController = FindAnyObjectByType<PlayerController>();
         PauseOFF();
     }
 
@@ -29,13 +39,22 @@ public class Pause : MonoBehaviour
         {
             if (pause == false)
             {
+                // Если игра не на паузе - включаем паузу
                 PauseON();
                 pause = true;
             }
             else
             {
-                PauseOFF();
-                pause = false; 
+                if (SettingsPanel.activeSelf)
+                {
+                    SettingsPanel.SetActive(false);
+                    PauseON();
+                }
+                else
+                {
+                    PauseOFF();
+                    pause = false;
+                }
             }
         }
     }
@@ -58,11 +77,19 @@ public class Pause : MonoBehaviour
         Time.timeScale = 0f;
         OnPauseEnable.Invoke();
         IsActive = true;
+
         Cursor.lockState = CursorLockMode.None;
         Cursor.visible = true;
+
+        playerController.CameraLock = true;
+
         point.gameObject.SetActive(false);
         inventoryController.inventoryFullText.gameObject.SetActive(false);
-        
+        raycastController.help.gameObject.SetActive(false);
+        inventoryController.inventory.gameObject.SetActive(false);
+        tasks.taskText.gameObject.SetActive(false);
+        timer._timeLeft.gameObject.SetActive(false);
+
     }
 
     public void PauseOFF()
@@ -70,9 +97,16 @@ public class Pause : MonoBehaviour
         Time.timeScale = 1f;
         OnPauseDisable.Invoke();
         IsActive = false;
+
         Cursor.lockState = CursorLockMode.Locked;
         Cursor.visible = false;
+
+        playerController.CameraLock = false;
+
         point.gameObject.SetActive(true);
+        inventoryController.inventory.gameObject.SetActive(true);
+        tasks.taskText.gameObject.SetActive(true);
+        timer._timeLeft.gameObject.SetActive(true);
     }
 
 }
