@@ -6,7 +6,8 @@ public class Generation : MonoBehaviour
     [Header("Prefabs")]
     [SerializeField] private GameObject wallPrefab;
     [SerializeField] private GameObject cornerPrefab;
-    [SerializeField] private GameObject floorCeilingTilePrefab; // Тайл для пола/потолка
+    [SerializeField] private GameObject tilePrefab; // Тайл для пола/потолка
+    [SerializeField] private GameObject doorPredab;
 
     [Header("Settings")]
     public int Width = 10;
@@ -16,9 +17,12 @@ public class Generation : MonoBehaviour
     public bool centerBuilding = true;
 
     [Header("Настройки заполнения")]
-    [SerializeField] private bool generateFloor = true;
+    [SerializeField] private bool generateTile = true;
 
-    private List<GameObject> generatedObjects = new List<GameObject>();
+    [Header("Cписки")]
+    private List<GameObject> generatedOutline = new List<GameObject>();
+    private List<GameObject> generatedTiles = new List<GameObject>();
+    private List<GameObject> generatedDoors = new List<GameObject>();
 
     private void Start()
     {
@@ -32,7 +36,7 @@ public class Generation : MonoBehaviour
     {
         ClearPreviousGeneration();
         GenerateOutline();
-        if (generateFloor) GenerateTiledInterior();
+        if (generateTile) GenerateTiledInterior();
 
         // Добавляем генерацию предметов
         ItemGenerator itemGenerator = GetComponent<ItemGenerator>();
@@ -63,7 +67,7 @@ public class Generation : MonoBehaviour
             Vector3 cornerPos = corners[i];
             Quaternion rotation = Quaternion.Euler(0, -90 * i + 90, 0);
             GameObject corner = Instantiate(cornerPrefab, cornerPos, rotation, transform);
-            generatedObjects.Add(corner);
+            generatedOutline.Add(corner);
             Debug.DrawLine(cornerPos, cornerPos + Vector3.up * 5f, Color.red, 5f);
         }
 
@@ -74,11 +78,11 @@ public class Generation : MonoBehaviour
 
             Vector3 frontWallPos = new Vector3(xPos, 0, 0) + centerOffset;
             GameObject frontWall = Instantiate(wallPrefab, frontWallPos, Quaternion.Euler(0, 180, 0), transform);
-            generatedObjects.Add(frontWall);
+            generatedOutline.Add(frontWall);
 
             Vector3 backWallPos = new Vector3(xPos, 0, totalLength) + centerOffset;
             GameObject backWall = Instantiate(wallPrefab, backWallPos, Quaternion.identity, transform);
-            generatedObjects.Add(backWall);
+            generatedOutline.Add(backWall);
         }
 
         for (int i = 1; i < Length; i++)
@@ -87,11 +91,11 @@ public class Generation : MonoBehaviour
 
             Vector3 leftWallPos = new Vector3(0, 0, zPos) + centerOffset;
             GameObject leftWall = Instantiate(wallPrefab, leftWallPos, Quaternion.Euler(0, -90, 0), transform);
-            generatedObjects.Add(leftWall);
+            generatedOutline.Add(leftWall);
 
             Vector3 rightWallPos = new Vector3(totalWidth, 0, zPos) + centerOffset;
             GameObject rightWall = Instantiate(wallPrefab, rightWallPos, Quaternion.Euler(0, 90, 0), transform);
-            generatedObjects.Add(rightWall);
+            generatedOutline.Add(rightWall);
         }
     }
 
@@ -109,7 +113,7 @@ public class Generation : MonoBehaviour
         // Начальная позиция первого тайла
         Vector3 startPos = new Vector3(segmentSize / 2f, 0, segmentSize / 2f) + centerOffset;
 
-        if (generateFloor)
+        if (generateTile)
         {
             CreateTileLayer(startPos, tileCountX, tileCountZ, 0f, "Floor_");
         }
@@ -121,34 +125,61 @@ public class Generation : MonoBehaviour
         {
             for (int z = 0; z < countZ; z++)
             {
-                Vector3 tilePos = startPos +
-                                 new Vector3(x * segmentSize, height, z * segmentSize);
+                Vector3 tilePos = startPos + new Vector3(x * segmentSize, height, z * segmentSize);
 
-                GameObject tile = Instantiate(
-                    floorCeilingTilePrefab,
-                    tilePos,
-                    Quaternion.identity,
-                    transform);
-
+                GameObject tile = Instantiate(tilePrefab, tilePos, Quaternion.identity, transform);
                 tile.name = namePrefix + x + "_" + z;
-                generatedObjects.Add(tile);
+                generatedTiles.Add(tile);
+
+                for (int i = 0; i<Random.Range(0,3); i++)
+                {   
+                    if (x == 0 && z == 0 || x == 1 && z == 0 || x == 0 && z == 0)
+                    {
+                        continue;
+                    }
+                    Vector3 doorPos = tilePos;
+                    GameObject door = Instantiate(doorPredab, doorPos, Quaternion.identity, transform);
+                    door.transform.rotation = Quaternion.Euler(0, 90 * Random.Range(0, 3), 0);
+                    door.name = "door " + x + "_" + z; 
+                    generatedTiles.Add(door);
+
+                }
             }
         }
     }
 
     private void ClearPreviousGeneration()
     {
-        for (int i = generatedObjects.Count - 1; i >= 0; i--)
+        for (int i = generatedOutline.Count - 1; i >= 0; i--)
         {
-            if (generatedObjects[i] != null)
+            if (generatedOutline[i] != null)
             {
-                if (Application.isPlaying) Destroy(generatedObjects[i]);
-                else DestroyImmediate(generatedObjects[i]);
+                if (Application.isPlaying) Destroy(generatedOutline[i]);
+                else DestroyImmediate(generatedOutline[i]);
             }
         }
-        generatedObjects.Clear();
-    }
+        generatedOutline.Clear();
 
+        for (int i = generatedTiles.Count - 1; i >= 0; i--)
+        {
+            if (generatedTiles[i] != null)
+            {
+                if (Application.isPlaying) Destroy(generatedTiles[i]);
+                else DestroyImmediate(generatedTiles[i]);
+            }
+        }
+        generatedTiles.Clear();
+
+        for (int i = generatedDoors.Count - 1; i >= 0; i--)
+        {
+            if (generatedDoors[i] != null)
+            {
+                if (Application.isPlaying) Destroy(generatedDoors[i]);
+                else DestroyImmediate(generatedDoors[i]);
+            }
+        }
+        generatedDoors.Clear();
+    }
     private void OnValidate()
     {
         Width = Mathf.Max(2, Width);
@@ -170,13 +201,13 @@ public class Generation : MonoBehaviour
                 new Vector3(totalWidth / 2f, totalLength / 2f) + centerOffset,
                 new Vector3(totalWidth, totalLength));
 
-            if (generateFloor)
+            if (generateTile)
             {
                 float innerWidth = totalWidth - 2 * segmentSize;
                 float innerLength = totalLength - 2 * segmentSize;
 
                 Gizmos.color = Color.green;
-                if (generateFloor)
+                if (generateTile)
                 {
                     Gizmos.DrawWireCube(
                         new Vector3(totalWidth / 2f, 0, totalLength / 2f) + centerOffset,

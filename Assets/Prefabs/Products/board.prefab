@@ -49,7 +49,7 @@ PrefabInstance:
       value: 0
       objectReference: {fileID: 0}
     - target: {fileID: -7635826562936255635, guid: 3e3ebb2f637456e48a2d0e954841c10e, type: 3}
-      propertyPath: m_Materials.Array.data[0]
+      propertyPath: 'm_Materials.Array.data[0]'
       value: 
       objectReference: {fileID: 2100000, guid: b2127662d1530c549b94d92636039a93, type: 2}
     - target: {fileID: 919132149155446097, guid: 3e3ebb2f637456e48a2d0e954841c10e, type: 3}
@@ -97,7 +97,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   _name: board
-  _sprite: {fileID: 21300000, guid: 71a70425ce2977346acbfcf0c5869ab7, type: 3}
+  _sprite: {fileID: 21300000, guid: 212b9332c12456d418a4bbeec86c584b, type: 3}
 --- !u!64 &3315690823907490051
 MeshCollider:
   m_ObjectHideFlags: 0

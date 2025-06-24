@@ -45,6 +45,8 @@ public class Tasks : MonoBehaviour
 
         currentTaskName = itemInfo._name;
         UpdateTaskUI();
+
+        Debug.Log(score_timer.CurrectScore);
     }
 
     public void CompleteTask()

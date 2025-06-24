@@ -49,7 +49,7 @@ PrefabInstance:
       value: 0
       objectReference: {fileID: 0}
     - target: {fileID: -7635826562936255635, guid: d77cd81e50d434e4aa33de63a611386c, type: 3}
-      propertyPath: m_Materials.Array.data[0]
+      propertyPath: 'm_Materials.Array.data[0]'
       value: 
       objectReference: {fileID: 2100000, guid: a8b899be08e68814e94d256f8efba01c, type: 2}
     - target: {fileID: 919132149155446097, guid: d77cd81e50d434e4aa33de63a611386c, type: 3}
@@ -97,7 +97,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   _name: calendar
-  _sprite: {fileID: 21300000, guid: 9fc1da6010af4624ea1454eec63c2a02, type: 3}
+  _sprite: {fileID: 21300000, guid: 57550f241399ca644a2ad25309795652, type: 3}
 --- !u!64 &4880612829338694631
 MeshCollider:
   m_ObjectHideFlags: 0

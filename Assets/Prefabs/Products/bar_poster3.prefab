@@ -49,7 +49,7 @@ PrefabInstance:
       value: 0
       objectReference: {fileID: 0}
     - target: {fileID: -7635826562936255635, guid: 06a1440f47c6a92488969e29c22055d8, type: 3}
-      propertyPath: m_Materials.Array.data[0]
+      propertyPath: 'm_Materials.Array.data[0]'
       value: 
       objectReference: {fileID: 2100000, guid: d58ac38c4a018994ba2515c56082a939, type: 2}
     - target: {fileID: 919132149155446097, guid: 06a1440f47c6a92488969e29c22055d8, type: 3}
@@ -97,7 +97,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   _name: bar_poster3
-  _sprite: {fileID: 21300000, guid: 97e351db1e459474191d32d80e42b4e1, type: 3}
+  _sprite: {fileID: 21300000, guid: c6df6cbd0f83cc747a4fb9f5d16f617a, type: 3}
 --- !u!64 &8445103648061318699
 MeshCollider:
   m_ObjectHideFlags: 0

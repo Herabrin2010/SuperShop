@@ -92,7 +92,7 @@ public class Score_Timer : MonoBehaviour
     }
     private void timerLose()
     {
-        if (timeLeft == 0)
+        if (timeLeft == 0 || adminPanel.TimerLose == true)
         {
             _timeLeft.text = "Время: 0";
             Time.timeScale = 0;
@@ -106,6 +106,9 @@ public class Score_Timer : MonoBehaviour
             GameOverMenu.SetActive(true);
 
             playerPrefsSave(value: RecordScore);
+
+            _currentScore.text = "Текущий счёт: " + CurrectScore.ToString();
+            _recordScore.text = "Рекодный счёт: " + RecordScore.ToString();
         }
     }
 

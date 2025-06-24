@@ -49,7 +49,7 @@ PrefabInstance:
       value: 0
       objectReference: {fileID: 0}
     - target: {fileID: -7635826562936255635, guid: 54636a1845da9574c9c4126430c319a8, type: 3}
-      propertyPath: m_Materials.Array.data[0]
+      propertyPath: 'm_Materials.Array.data[0]'
       value: 
       objectReference: {fileID: 2100000, guid: 6df3cbc52f9a1794c8543f5efd44255d, type: 2}
     - target: {fileID: 919132149155446097, guid: 54636a1845da9574c9c4126430c319a8, type: 3}
@@ -97,7 +97,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   _name: chibi_k
-  _sprite: {fileID: 21300000, guid: f1929e51b6d17d84698956234493db1c, type: 3}
+  _sprite: {fileID: 21300000, guid: 64af248e56430b448901a40b98e3406a, type: 3}
 --- !u!64 &1047979611755176450
 MeshCollider:
   m_ObjectHideFlags: 0

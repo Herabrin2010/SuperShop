@@ -49,7 +49,7 @@ PrefabInstance:
       value: 0
       objectReference: {fileID: 0}
     - target: {fileID: -7635826562936255635, guid: 164d6ac71d3a7224b81a20329e51e549, type: 3}
-      propertyPath: m_Materials.Array.data[0]
+      propertyPath: 'm_Materials.Array.data[0]'
       value: 
       objectReference: {fileID: 2100000, guid: c7329a341e089e24b8f0fe7467aacd36, type: 2}
     - target: {fileID: 919132149155446097, guid: 164d6ac71d3a7224b81a20329e51e549, type: 3}
@@ -97,7 +97,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   _name: capasitor
-  _sprite: {fileID: 21300000, guid: 6a09f1a79406f8a4e865f53060c8a646, type: 3}
+  _sprite: {fileID: 21300000, guid: bdcdad08f13c9284eaeba5ca5163c505, type: 3}
 --- !u!64 &7672550042010202357
 MeshCollider:
   m_ObjectHideFlags: 0

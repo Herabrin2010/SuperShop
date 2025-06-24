@@ -2,6 +2,7 @@ using UnityEngine;
 using UnityEngine.EventSystems;
 using UnityEngine.UI;
 using TMPro;
+using Unity.VisualScripting;
 
 public class AdminPanel : MonoBehaviour
 {
@@ -14,6 +15,7 @@ public class AdminPanel : MonoBehaviour
     [Header("Переменные для выдачи")]
     [HideInInspector] public bool TimeStop;
     [HideInInspector] public int _TimeLeft;
+    [HideInInspector] public bool TimerLose;
 
     [Header ("Canvas")]
     [SerializeField] private GameObject passwordPanel;
@@ -46,6 +48,11 @@ public class AdminPanel : MonoBehaviour
             TimeStop = false;
             isTimeStop= false;
         }
+    }
+
+    public void timerLose() 
+    {
+        TimerLose = true;
     }
 
     private void Awake()
