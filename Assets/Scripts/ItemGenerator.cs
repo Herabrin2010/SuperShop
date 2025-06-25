@@ -23,7 +23,7 @@ public class ItemGenerator : MonoBehaviour
     [SerializeField] private bool alignToSurfaceNormal = true;
 
     [Header("Spawn Zones")]
-    [SerializeField] private bool autoDetectFloorTiles = true; // Новый параметр
+    [SerializeField] public bool AutoDetectFloorTiles = true; // Новый параметр
     [SerializeField] private List<Transform> customZones = new List<Transform>();
 
     private List<GameObject> spawnedItems = new List<GameObject>();
@@ -46,7 +46,7 @@ public class ItemGenerator : MonoBehaviour
             return;
         }
 
-        if (autoDetectFloorTiles) FindFloorTilesAndAddAsZones();
+        if (AutoDetectFloorTiles) FindFloorTilesAndAddAsZones();
 
         int itemsToSpawn = Random.Range(minItems, maxItems + 1);
         int attempts = 0;

@@ -8,12 +8,15 @@ public class Generation : MonoBehaviour
     [SerializeField] private GameObject cornerPrefab;
     [SerializeField] private GameObject tilePrefab;
     [SerializeField] private GameObject doorPredab;
+    [SerializeField] private GameObject floorPrefab;
 
     [Header("Settings")]
     public int Width = 10;
     public int Length = 10;
     public float segmentSize = 10f;
     [SerializeField] private bool generateOnStart = true;
+    [SerializeField] private bool generateDoors = true;
+    [SerializeField] private bool generateFloor = true;
     public bool centerBuilding = true;
 
     [Header("Настройки заполнения")]
@@ -111,7 +114,7 @@ public class Generation : MonoBehaviour
         int tileCountZ = Length - 1;
 
         // Начальная позиция первого тайла (половина сегмента от угла)
-        Vector3 startPos = new Vector3(segmentSize / 2f + 5, 0, segmentSize / 2f + 5) + centerOffset;
+        Vector3 startPos = new Vector3(segmentSize / 2f, 0, segmentSize / 2f) + centerOffset;
 
         if (generateTile)
         {
@@ -121,6 +124,9 @@ public class Generation : MonoBehaviour
 
     private void CreateTileLayer(Vector3 startPos, int countX, int countZ, float height, string namePrefix)
     {
+        int centerBuildingX = countX / 2;
+        int centerBuildingZ = countZ / 2;
+
         for (int x = 0; x < countX; x++)
         {
             for (int z = 0; z < countZ; z++)
@@ -128,18 +134,50 @@ public class Generation : MonoBehaviour
                 Vector3 tilePos = startPos + new Vector3(x * segmentSize, height, z * segmentSize);
 
                 GameObject tile = Instantiate(tilePrefab, tilePos, Quaternion.identity, transform);
+                tile.transform.position = tilePos + new Vector3(5, 0, 5);
+                tilePos = tilePos + new Vector3(5, 0, 5);
                 tile.name = namePrefix + x + "_" + z;
                 generatedTiles.Add(tile);
 
                 // Генерация дверей
-                for (int i = 0; i < Random.Range(0, 3); i++)
+                if (generateDoors == true && generateTile == true)
                 {
-                    Vector3 doorPos = tilePos;
-                    GameObject door = Instantiate(doorPredab, doorPos, Quaternion.identity, transform);
-                    door.transform.rotation = Quaternion.Euler(0, 90 * Random.Range(0, 3), 0);
-                    door.name = "Door " + x + "_" + z;
-                    generatedTiles.Add(door);
+                    for (int i = 0; i < Random.Range(0, 3); i++)
+                    {
+                        if (x == centerBuildingX && z == centerBuildingZ)
+                        {
+                            Debug.Log(tile.name);
+                            continue;
+                        }
+
+                        else
+                        {
+                            Vector3 doorPos = tilePos;
+                            GameObject door = Instantiate(doorPredab, doorPos, Quaternion.identity, transform);
+                            door.transform.rotation = Quaternion.Euler(0, 90 * Random.Range(0, 3), 0);
+                            door.name = "Door " + tile.name;
+                            generatedTiles.Add(door);
+                        }
+                    }
                 }
+
+                // Генерация пола
+                if (generateFloor == true && generateTile == true)
+                {
+                    if (x == centerBuildingX && z == centerBuildingZ)
+                    {
+                        continue;
+                    }
+
+                    else
+                    {
+                        Vector3 floorPos = tilePos;
+                        GameObject floor = Instantiate(floorPrefab, floorPos, Quaternion.identity, transform);
+                        floor.name = "Floor" + x + "_" + z;
+                        generatedTiles.Add(floor);
+                    }
+                }
+
             }
         }
     }
