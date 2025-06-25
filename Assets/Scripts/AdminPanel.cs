@@ -27,9 +27,10 @@ public class AdminPanel : MonoBehaviour
     [Header("Пароль от панели")]
     private string password = "230200";
 
-    private bool isTimeStop = false;
 
+    private bool isTimeStop = false;
     private bool admin = false;
+
     public void taskComplete()
     {
         tasks.CompleteTask();
@@ -53,6 +54,11 @@ public class AdminPanel : MonoBehaviour
     public void timerLose() 
     {
         TimerLose = true;
+    }
+
+    public void tp()
+    {
+        playerController.transform.position = Vector3.zero;
     }
 
     private void Awake()

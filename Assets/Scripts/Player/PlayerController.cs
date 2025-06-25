@@ -11,10 +11,11 @@ public class PlayerController : MonoBehaviour
     [Header("Movement Settings")]
     [SerializeField] private float walkSpeed = 5f;
     [SerializeField] private float runSpeed = 8f;
+    [SerializeField] private float sneekSpeed = 2f;
     [SerializeField] private float gravity = -9.81f;
     [SerializeField] private float jumpHeight = 1.5f;
     public bool MovementLock;
-    
+
 
     [Header("Camera Settings")]
     public Camera playerCamera;
@@ -29,7 +30,8 @@ public class PlayerController : MonoBehaviour
     public float currentSpeed;
     private bool isGrounded;
     private bool isSprinting;
-    
+    private bool isSneeking;
+
 
     private void Start()
     {
@@ -66,6 +68,7 @@ public class PlayerController : MonoBehaviour
 
         // Обработка спринта
         isSprinting = keyRebinder.GetAction("Sprint");
+        isSneeking = keyRebinder.GetAction("Sneek");
     }
 
     private void HandleMovement()
@@ -90,6 +93,7 @@ public class PlayerController : MonoBehaviour
         {
             movementDirection.Normalize();
             currentSpeed = isSprinting ? runSpeed : walkSpeed;
+            currentSpeed = isSneeking ? sneekSpeed : walkSpeed;
             controller.Move(movementDirection * currentSpeed * Time.fixedDeltaTime);
         }
 
@@ -142,8 +146,10 @@ public class PlayerController : MonoBehaviour
 private void UpdateAnimations()
     {
         bool isMoving = movementDirection != Vector3.zero;
+        bool isActuallySneeking = isMoving && isSneeking;
         bool isActuallySprinting = isMoving && isSprinting;
 
+        animator.SetBool("IsSneeking", isActuallySneeking);
         animator.SetBool("IsMoving", isMoving);
         animator.SetBool("IsSprinting", isActuallySprinting);
         animator.SetBool("IsGrounded", isGrounded);

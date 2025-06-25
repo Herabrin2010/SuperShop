@@ -5,8 +5,8 @@ using UnityEngine;
 public class Tasks : MonoBehaviour
 {
     [Header("Task Settings")]
-    [SerializeField] private List<GameObject> itemPrefabs;
-    [SerializeField] public TextMeshProUGUI taskText;
+    public List<GameObject> itemPrefabs;
+    public TextMeshPro taskText;
 
     [Header ("—сылки")]
     private AdminPanel adminPanel;
@@ -59,6 +59,6 @@ public class Tasks : MonoBehaviour
     private void UpdateTaskUI()
     {
         if (taskText != null)
-            taskText.text = $"Current task:\n- {currentTaskName}";
+            taskText.text = currentTaskName;
     }
 }

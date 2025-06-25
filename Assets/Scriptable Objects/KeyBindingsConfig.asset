@@ -31,3 +31,5 @@ MonoBehaviour:
     keyCode: 101
   - actionName: Admin
     keyCode: 9
+  - actionName: Sneek
+    keyCode: 304

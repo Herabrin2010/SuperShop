@@ -13,6 +13,7 @@ public class RaycastController : MonoBehaviour
     private KeyRebinder keyRebinder;
     private KeyBindingsData keyBindingData;
     private Tasks tasks;
+    private MultiCutsceneManager multiCutsceneManager;
 
     private GameObject currentTarget;
 
@@ -21,6 +22,7 @@ public class RaycastController : MonoBehaviour
         if (playerCamera == null) playerCamera = Camera.main;
         if (help != null) help.gameObject.SetActive(false);
 
+        multiCutsceneManager = FindAnyObjectByType<MultiCutsceneManager>();
         inventoryController = FindAnyObjectByType<InventoryController>();
         keyRebinder = FindAnyObjectByType<KeyRebinder>();
         keyBindingData = FindAnyObjectByType<KeyBindingsData>();
@@ -137,6 +139,7 @@ public class RaycastController : MonoBehaviour
 
     private void ClearInventory()
     {
+        multiCutsceneManager.PlayCutscene(1);
         inventoryController.ResetSlots();
     }
 }

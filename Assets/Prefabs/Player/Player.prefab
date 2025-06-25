@@ -295,13 +295,13 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 2277828882293373630}
   serializedVersion: 2
-  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0.00000065643326, y: 0.0020226962, z: 0.000028494971}
-  m_LocalScale: {x: 0.009999997, y: 0.01, z: 0.01}
+  m_LocalRotation: {x: -1.3491123e-16, y: 0.014922051, z: -0.00000000514023, w: 0.99988866}
+  m_LocalPosition: {x: -0.011321475, y: -0.00081389025, z: -0.013673276}
+  m_LocalScale: {x: 0.01, y: 0.01, z: 0.01}
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 852257527655561}
-  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+  m_LocalEulerAnglesHint: {x: 25.4, y: 23.7, z: -0.018}
 --- !u!20 &595703509339401171
 Camera:
   m_ObjectHideFlags: 0
@@ -580,7 +580,7 @@ Transform:
   m_GameObject: {fileID: 3949737387253176102}
   serializedVersion: 2
   m_LocalRotation: {x: 2.4998646e-15, y: -1, z: 0.00000017437613, w: 8.881784e-16}
-  m_LocalPosition: {x: 0.00003696338, y: 0, z: -0.0018340212}
+  m_LocalPosition: {x: 0.00004, y: 0.00155, z: -0.00183}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
@@ -849,6 +849,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   walkSpeed: 5
   runSpeed: 10
+  sneekSpeed: 2
   gravity: -9.81
   jumpHeight: 2
   MovementLock: 0

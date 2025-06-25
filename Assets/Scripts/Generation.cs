@@ -6,7 +6,7 @@ public class Generation : MonoBehaviour
     [Header("Prefabs")]
     [SerializeField] private GameObject wallPrefab;
     [SerializeField] private GameObject cornerPrefab;
-    [SerializeField] private GameObject tilePrefab; // Тайл для пола/потолка
+    [SerializeField] private GameObject tilePrefab;
     [SerializeField] private GameObject doorPredab;
 
     [Header("Settings")]
@@ -110,12 +110,12 @@ public class Generation : MonoBehaviour
         int tileCountX = Width - 1;
         int tileCountZ = Length - 1;
 
-        // Начальная позиция первого тайла
-        Vector3 startPos = new Vector3(segmentSize / 2f, 0, segmentSize / 2f) + centerOffset;
+        // Начальная позиция первого тайла (половина сегмента от угла)
+        Vector3 startPos = new Vector3(segmentSize / 2f + 5, 0, segmentSize / 2f + 5) + centerOffset;
 
         if (generateTile)
         {
-            CreateTileLayer(startPos, tileCountX, tileCountZ, 0f, "Floor_");
+            CreateTileLayer(startPos, tileCountX, tileCountZ, 0f, "Tile_");
         }
     }
 
@@ -131,18 +131,14 @@ public class Generation : MonoBehaviour
                 tile.name = namePrefix + x + "_" + z;
                 generatedTiles.Add(tile);
 
-                for (int i = 0; i<Random.Range(0,3); i++)
-                {   
-                    if (x == 0 && z == 0 || x == 1 && z == 0 || x == 0 && z == 0)
-                    {
-                        continue;
-                    }
+                // Генерация дверей
+                for (int i = 0; i < Random.Range(0, 3); i++)
+                {
                     Vector3 doorPos = tilePos;
                     GameObject door = Instantiate(doorPredab, doorPos, Quaternion.identity, transform);
                     door.transform.rotation = Quaternion.Euler(0, 90 * Random.Range(0, 3), 0);
-                    door.name = "door " + x + "_" + z; 
+                    door.name = "Door " + x + "_" + z;
                     generatedTiles.Add(door);
-
                 }
             }
         }
@@ -161,7 +157,7 @@ public class Generation : MonoBehaviour
         generatedOutline.Clear();
 
         for (int i = generatedTiles.Count - 1; i >= 0; i--)
-        {
+        {   
             if (generatedTiles[i] != null)
             {
                 if (Application.isPlaying) Destroy(generatedTiles[i]);
@@ -198,8 +194,8 @@ public class Generation : MonoBehaviour
 
             Gizmos.color = Color.blue;
             Gizmos.DrawWireCube(
-                new Vector3(totalWidth / 2f, totalLength / 2f) + centerOffset,
-                new Vector3(totalWidth, totalLength));
+                new Vector3(totalWidth / 2f, 0 , totalLength / 2f) + centerOffset,
+                new Vector3(totalWidth, 0, totalLength));
 
             if (generateTile)
             {

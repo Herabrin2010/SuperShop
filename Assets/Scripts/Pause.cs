@@ -18,17 +18,13 @@ public class Pause : MonoBehaviour
     [Header ("—сылки")]
     private RaycastController raycastController;
     private InventoryController inventoryController;
-    private Tasks tasks;
-    private Score_Timer timer;
     private PlayerController playerController;
 
     private void Awake()
     {
-        tasks = FindAnyObjectByType<Tasks>();
         keyRebinder = FindAnyObjectByType<KeyRebinder>();
         raycastController = FindAnyObjectByType<RaycastController>();
         inventoryController = FindAnyObjectByType<InventoryController>();
-        timer = FindAnyObjectByType<Score_Timer>();
         playerController = FindAnyObjectByType<PlayerController>();
         PauseOFF();
     }
@@ -87,8 +83,6 @@ public class Pause : MonoBehaviour
         inventoryController.inventoryFullText.gameObject.SetActive(false);
         raycastController.help.gameObject.SetActive(false);
         inventoryController.inventory.gameObject.SetActive(false);
-        tasks.taskText.gameObject.SetActive(false);
-        timer._timeLeft.gameObject.SetActive(false);
 
     }
 
@@ -105,8 +99,6 @@ public class Pause : MonoBehaviour
 
         point.gameObject.SetActive(true);
         inventoryController.inventory.gameObject.SetActive(true);
-        tasks.taskText.gameObject.SetActive(true);
-        timer._timeLeft.gameObject.SetActive(true);
     }
 
 }
