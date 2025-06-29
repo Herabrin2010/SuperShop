@@ -113,6 +113,7 @@ public class MultiCutsceneManager : MonoBehaviour
         {
             playerCamera.enabled = true;
             playerCamera.gameObject.SetActive(true); // На всякий случай
+            playerCamera.transform.position = new Vector3(0f, 0f, 0f);
         }
 
         // 4. Отписываемся от события
@@ -135,13 +136,4 @@ public class MultiCutsceneManager : MonoBehaviour
             cam.gameObject.SetActive(active);
     }
 
-    // === Пропуск текущей катсцены по кнопке ===
-    private void Update()
-    {
-        if (Input.GetKeyDown(KeyCode.Space) && currentCutscene != null
-            && currentCutscene.timeline.state == PlayState.Playing)
-        {
-            currentCutscene.timeline.Stop(); // Вызовет OnCutsceneEnd
-        }
-    }
 }

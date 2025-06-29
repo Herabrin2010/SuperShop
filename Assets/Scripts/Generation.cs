@@ -1,4 +1,6 @@
+using System;
 using System.Collections.Generic;
+using Unity.AI.Navigation;
 using UnityEngine;
 
 public class Generation : MonoBehaviour
@@ -7,16 +9,16 @@ public class Generation : MonoBehaviour
     [SerializeField] private GameObject wallPrefab;
     [SerializeField] private GameObject cornerPrefab;
     [SerializeField] private GameObject tilePrefab;
-    [SerializeField] private GameObject doorPredab;
+    [SerializeField] private GameObject placeholderPredab;
     [SerializeField] private GameObject floorPrefab;
+    [SerializeField] private GameObject doorPrefab;
 
     [Header("Settings")]
+    [SerializeField] private bool generateOnStart = true;
     public int Width = 10;
     public int Length = 10;
     public float segmentSize = 10f;
-    [SerializeField] private bool generateOnStart = true;
-    [SerializeField] private bool generateDoors = true;
-    [SerializeField] private bool generateFloor = true;
+
     public bool centerBuilding = true;
 
     [Header("Настройки заполнения")]
@@ -25,14 +27,28 @@ public class Generation : MonoBehaviour
     [Header("Cписки")]
     private List<GameObject> generatedOutline = new List<GameObject>();
     private List<GameObject> generatedTiles = new List<GameObject>();
-    private List<GameObject> generatedDoors = new List<GameObject>();
+    private List<GameObject> generatedPlaceholder = new List<GameObject>();
+    private List<GameObject> generatedFloors = new List<GameObject>();
+    public List<GameObject> generatedDoors = new List<GameObject>();
+    private List<Animator> doorAnimators = new List<Animator>();
 
+    private Animator animator;
+
+    [SerializeField] private NavMeshSurface surface;
     private void Start()
     {
+
         if (generateOnStart)
         {
             GenerateCompleteBuilding();
+            BakeNavMesh();
         }
+    }
+
+    public void OpenDoor(int doorIndex)
+    {
+        Animator animator = doorAnimators[doorIndex];
+        animator.SetTrigger("OpenDoor");
     }
 
     public void GenerateCompleteBuilding()
@@ -127,6 +143,7 @@ public class Generation : MonoBehaviour
         int centerBuildingX = countX / 2;
         int centerBuildingZ = countZ / 2;
 
+        //Генерация тайлов
         for (int x = 0; x < countX; x++)
         {
             for (int z = 0; z < countZ; z++)
@@ -138,46 +155,84 @@ public class Generation : MonoBehaviour
                 tilePos = tilePos + new Vector3(5, 0, 5);
                 tile.name = namePrefix + x + "_" + z;
                 generatedTiles.Add(tile);
+            }
+        }
 
-                // Генерация дверей
-                if (generateDoors == true && generateTile == true)
+        //Генерация заполнителя
+        for (int x = 0; x < countX; x++)
+        {
+            for (int z = 0; z < countZ; z++)
+            {
+                Vector3 tilePos = startPos + new Vector3(x * segmentSize + 5, height, z * segmentSize + 5);
+
+                for (int i = 0; i < UnityEngine.Random.Range(0, 3); i++)
                 {
-                    for (int i = 0; i < Random.Range(0, 3); i++)
-                    {
-                        if (x == centerBuildingX && z == centerBuildingZ)
-                        {
-                            Debug.Log(tile.name);
-                            continue;
-                        }
+                    Vector3 placeholderPos = tilePos;
 
-                        else
-                        {
-                            Vector3 doorPos = tilePos;
-                            GameObject door = Instantiate(doorPredab, doorPos, Quaternion.identity, transform);
-                            door.transform.rotation = Quaternion.Euler(0, 90 * Random.Range(0, 3), 0);
-                            door.name = "Door " + tile.name;
-                            generatedTiles.Add(door);
-                        }
-                    }
-                }
-
-                // Генерация пола
-                if (generateFloor == true && generateTile == true)
-                {
-                    if (x == centerBuildingX && z == centerBuildingZ)
+                    if (Math.Abs(x - centerBuildingX) <= 1 && Math.Abs(z - centerBuildingZ) <= 1)
                     {
                         continue;
                     }
 
+
                     else
                     {
-                        Vector3 floorPos = tilePos;
-                        GameObject floor = Instantiate(floorPrefab, floorPos, Quaternion.identity, transform);
-                        floor.name = "Floor" + x + "_" + z;
-                        generatedTiles.Add(floor);
+                        {
+                            GameObject placeholder = Instantiate(placeholderPredab, placeholderPos, Quaternion.identity, transform);
+                            placeholder.transform.rotation = Quaternion.Euler(0, 90 * UnityEngine.Random.Range(0, 4), 0);
+                            placeholder.name = "Placeholder_ " + x + "_" + z; 
+                            generatedPlaceholder.Add(placeholder);
+                        }
                     }
                 }
+            }
+        }
 
+        //Генерация полов
+        for (int x = 0; x < countX; x++)
+        {
+            for (int z = 0; z < countZ; z++)
+            {
+                Vector3 tilePos = startPos + new Vector3(x * segmentSize + 5, height, z * segmentSize + 5);
+
+                if (x == centerBuildingX && z == centerBuildingZ)
+                {
+                    continue;
+                }
+
+                else
+                {
+                    Vector3 floorPos = tilePos;
+                    GameObject floor = Instantiate(floorPrefab, floorPos, Quaternion.identity, transform);
+                    floor.name = "Floor_" + x + "_" + z;
+                    generatedFloors.Add(floor);
+                }
+            }
+        }
+
+        //Генерация дверей
+        for (int x = 0; x < countX; x++)
+        {
+            for (int z = 0; z < countZ; z++)
+            {
+                Vector3 tilePos = startPos + new Vector3(x * segmentSize + 5, height, z * segmentSize + 5);
+
+                if (x == centerBuildingX && z == centerBuildingZ)
+                {
+                    for (int i = 1; i < 5; i++)
+                    {
+                        Vector3 doorPos = tilePos;
+                        GameObject door = Instantiate(doorPrefab, doorPos, Quaternion.identity, transform);
+
+                        // Получаем и сохраняем Animator
+                        Animator doorAnimator = door.GetComponent<Animator>();
+                        doorAnimators.Add(doorAnimator);
+
+                        door.transform.rotation = Quaternion.Euler(0, 90 * i, 0);
+                        door.name = "Door_" + i.ToString();
+                        generatedDoors.Add(door);
+                    }
+                }
             }
         }
     }
@@ -204,15 +259,15 @@ public class Generation : MonoBehaviour
         }
         generatedTiles.Clear();
 
-        for (int i = generatedDoors.Count - 1; i >= 0; i--)
+        for (int i = generatedPlaceholder.Count - 1; i >= 0; i--)
         {
-            if (generatedDoors[i] != null)
+            if (generatedPlaceholder[i] != null)
             {
-                if (Application.isPlaying) Destroy(generatedDoors[i]);
-                else DestroyImmediate(generatedDoors[i]);
+                if (Application.isPlaying) Destroy(generatedPlaceholder[i]);
+                else DestroyImmediate(generatedPlaceholder[i]);
             }
         }
-        generatedDoors.Clear();
+        generatedPlaceholder.Clear();
     }
     private void OnValidate()
     {
@@ -251,4 +306,16 @@ public class Generation : MonoBehaviour
         }
     }
 
+    void BakeNavMesh()
+    {
+        if (surface != null)
+        {
+            surface.BuildNavMesh(); // Запекаем NavMesh
+            Debug.Log("NavMesh baked successfully!");
+        }
+        else
+        {
+            Debug.LogError("NavMeshSurface not assigned!");
+        }
+    }
 }

@@ -11,7 +11,7 @@ GameObject:
   - component: {fileID: 5714655539710931768}
   m_Layer: 0
   m_Name: DoorPivot
-  m_TagString: Untagged
+  m_TagString: Trashcan
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -155,7 +155,7 @@ GameObject:
   - component: {fileID: 1873919707093559599}
   m_Layer: 0
   m_Name: SellBoxDoor
-  m_TagString: Untagged
+  m_TagString: Trashcan
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0

@@ -7,7 +7,7 @@ public class InventoryController : MonoBehaviour
     [Header("Настройки")]
     public List<GameObject> Slots = new();
     public TextMeshProUGUI inventoryFullText;
-    private List<SlotInformation> slots = new();
+    public List<SlotInformation> slots = new();
 
     private Tasks tasks;
 
@@ -26,7 +26,36 @@ public class InventoryController : MonoBehaviour
             }
         }
     }
+    public Dictionary<string, int> GetInventoryData()
+    {
+        var inventoryData = new Dictionary<string, int>();
+        foreach (var slot in slots)
+        {
+            if (!slot.IsFree && !inventoryData.ContainsKey(slot.ItemName))
+            {
+                inventoryData.Add(slot.ItemName, 1); // Если предметы стакаются, можно увеличивать счетчик
+            }
+        }
+        return inventoryData;
+    }
 
+    public void LoadInventoryData(Dictionary<string, int> inventoryData)
+    {
+        ResetSlots(); // Очищаем инвентарь перед загрузкой
+
+        foreach (var item in inventoryData)
+        {
+            // Предполагаем, что у тебя есть префабы предметов в Resources
+            var itemPrefab = Resources.Load<GameObject>(item.Key);
+            if (itemPrefab != null)
+            {
+                for (int i = 0; i < item.Value; i++)
+                {
+                    AddItemToInventory(itemPrefab, null); // Добавляем предмет (без уничтожения объекта)
+                }
+            }
+        }
+    }
     private bool HasItem(SlotInformation slot, string targetItemName)
     {
         return !slot.IsFree && slot.ItemName == targetItemName;

@@ -7,11 +7,13 @@ TagManager:
   - Obj
   - Trashcan
   - Floor
+  - Door
+  - Monster
   layers:
   - Default
   - TransparentFX
   - Ignore Raycast
-  - obj
+  - IgnoreNavMesh
   - Water
   - UI
   - 

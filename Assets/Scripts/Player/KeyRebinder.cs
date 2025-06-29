@@ -48,7 +48,7 @@ public class KeyRebinder : MonoBehaviour
 
     void Update()
     {
-        if (isWaitingForInput)
+        if (isWaitingForInput == true)
         {
             if (Input.anyKeyDown)
             {

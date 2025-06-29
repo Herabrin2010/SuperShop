@@ -31,5 +31,7 @@ MonoBehaviour:
     keyCode: 101
   - actionName: Admin
     keyCode: 9
-  - actionName: Sneek
+  - actionName: Sneak
     keyCode: 304
+  - actionName: Time&Task
+    keyCode: 109

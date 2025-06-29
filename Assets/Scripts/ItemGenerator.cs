@@ -26,7 +26,7 @@ public class ItemGenerator : MonoBehaviour
     [SerializeField] public bool AutoDetectFloorTiles = true; // Новый параметр
     [SerializeField] private List<Transform> customZones = new List<Transform>();
 
-    private List<GameObject> spawnedItems = new List<GameObject>();
+    public List<GameObject> spawnedItems = new List<GameObject>();
     private Generation generation;
 
     private void Awake()

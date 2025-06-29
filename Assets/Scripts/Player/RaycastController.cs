@@ -14,8 +14,12 @@ public class RaycastController : MonoBehaviour
     private KeyBindingsData keyBindingData;
     private Tasks tasks;
     private MultiCutsceneManager multiCutsceneManager;
+    private Generation generation;
 
     private GameObject currentTarget;
+
+    private GameObject lastHitDoor;
+    private int lastDoorIndex = -1;
 
     private void Start()
     {
@@ -27,7 +31,7 @@ public class RaycastController : MonoBehaviour
         keyRebinder = FindAnyObjectByType<KeyRebinder>();
         keyBindingData = FindAnyObjectByType<KeyBindingsData>();
         tasks = FindAnyObjectByType<Tasks>();
-
+        generation = FindAnyObjectByType<Generation>();
 
         if (inventoryController == null) Debug.LogError("InventoryController not found!");
         if (keyRebinder == null) Debug.LogError("KeyRebinder not found!");
@@ -60,6 +64,9 @@ public class RaycastController : MonoBehaviour
         Ray ray = playerCamera.ViewportPointToRay(new Vector3(0.5f, 0.5f, 0));
         if (Physics.Raycast(ray, out var hit, interactionDistance))
         {
+            lastHitDoor = hit.collider.gameObject;
+            lastDoorIndex = generation.generatedDoors.IndexOf(lastHitDoor);
+
             HandleNewTarget(hit.collider.gameObject);
         }
         else
@@ -81,6 +88,9 @@ public class RaycastController : MonoBehaviour
                 break;
             case "Trashcan":
                 ShowInteractionPrompt($"Нажмите {getInteractionKey()} чтобы очистить инвентарь");
+                break;
+            case "Door":
+                ShowInteractionPrompt($"Нажмите {getInteractionKey()} чтобы открыть дверь");
                 break;
         }
     }
@@ -123,6 +133,9 @@ public class RaycastController : MonoBehaviour
             case "Trashcan":
                 ClearInventory();
                 break;
+            case "Door":
+                openDoor();
+                break;
         }
         ClearCurrentTarget();
     }
@@ -141,5 +154,11 @@ public class RaycastController : MonoBehaviour
     {
         multiCutsceneManager.PlayCutscene(1);
         inventoryController.ResetSlots();
+    }
+
+    private void openDoor() 
+    {
+
+        generation.OpenDoor(lastDoorIndex);
     }
 }
