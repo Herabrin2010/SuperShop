@@ -38,6 +38,7 @@ public class Pause : MonoBehaviour
 
     private void Update()
     {
+        updateAnimation();
         if (keyRebinder.GetActionDown("Pause"))
         {
             if (pause == false)
@@ -76,8 +77,6 @@ public class Pause : MonoBehaviour
         inventoryController.inventoryFullText.gameObject.SetActive(false);
         raycastController.help.gameObject.SetActive(false);
         inventoryController.inventory.gameObject.SetActive(false);
-
-        pauseAnimator.SetBool("Pause", true);
     }
 
     public void ClosePause()
@@ -93,18 +92,20 @@ public class Pause : MonoBehaviour
 
         point.gameObject.SetActive(true);
         inventoryController.inventory.gameObject.SetActive(true);
-
-        pauseAnimator.SetBool("Pause", false);
     }
 
     public void OpenSettings()
     {
         SettingsPanel.SetActive(true);
-        settingsAnimator.SetBool("Settings", true);
     }
     public void CloseSettings() 
     { 
         SettingsPanel.gameObject.SetActive(false);
-        settingsAnimator.SetBool("Settings", false); 
+    }
+
+    private void updateAnimation() 
+    {
+        pauseAnimator.SetBool("Pause", IsPause);
+        settingsAnimator.SetBool("Settings", IsSettings);
     }
 }
