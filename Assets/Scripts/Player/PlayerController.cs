@@ -11,8 +11,8 @@ public class PlayerController : MonoBehaviour
     private Animator animator;
 
     [Header("Movement Settings")]
-    [SerializeField] private float walkSpeed = 5f;
-    [SerializeField] private float runSpeed = 8f;
+    [SerializeField] private float runSpeed = 5f;
+    [SerializeField] private float sprintSpeed = 8f;
     [SerializeField] private float sneakSpeed = 2f;
     [SerializeField] private float gravity = -9.81f;
     [SerializeField] private float jumpHeight = 1.5f;
@@ -26,6 +26,10 @@ public class PlayerController : MonoBehaviour
     [SerializeField] private float minVerticalAngle = -80f; // Макс. угол вниз
     [SerializeField] private float maxVerticalAngle = 80f;  // Макс. угол вверх
     [SerializeField] private float rotationSpeed = 2f;
+
+    [SerializeField] private bool _invertingX;
+    [SerializeField] private bool _invertingY;
+
     [HideInInspector] public bool CameraLock;
     [HideInInspector] public float currentCameraRotationX = -180f; // Текущий угол камеры по X
 
@@ -38,35 +42,77 @@ public class PlayerController : MonoBehaviour
     [HideInInspector] public bool isTime_TaskOff;
     [HideInInspector] public bool isTime_Task = false;
 
+    [Header ("Health")]
     public int MaxPlayerHealth = 4;
     public int PlayerHealth;
 
+    [Header ("Checks")]
+    private bool isAdminPanel;
+
     [SerializeField] private TextMeshPro _playerHealth;
 
-    private void Start()
+    private void Awake()
     {
+
+        #region Links
         adminPanel = FindAnyObjectByType<AdminPanel>();
         controller = GetComponent<CharacterController>();
         animator = GetComponent<Animator>();
         keyRebinder = FindAnyObjectByType<KeyRebinder>();
+        #endregion
 
-        currentSpeed = walkSpeed;
+        #region Checks
+        if (adminPanel == null)
+        {
+            isAdminPanel = false;
+        }
+
+        else
+        {
+            isAdminPanel = true;
+        }
+        #endregion
+
+        currentSpeed = runSpeed;
         PlayerHealth = MaxPlayerHealth;
+    }
+
+    private void Start()
+    {
+        #region Player Settings
+        runSpeed = PlayerManager.Instance.PlayerStats.playerRunSpeed;
+        sprintSpeed = PlayerManager.Instance.PlayerStats.playerSprintSpeed;
+        sneakSpeed = PlayerManager.Instance.PlayerStats.playerSneekSpeed;
+        jumpHeight = PlayerManager.Instance.PlayerStats.playerJumpHeight;
+
+        gravity = PlayerManager.Instance.PlayerStats.gravity;
+
+        rotationSpeed = PlayerManager.Instance.PlayerStats.rotationSpeed;
+        _invertingX = PlayerManager.Instance.PlayerStats.invertingX;
+        _invertingY = PlayerManager.Instance.PlayerStats.invertingY;
+
+        MaxPlayerHealth = DifficultyManager.Instance.CurrentDifficulty.playerHealth;
+        #endregion
     }
 
 
     private void Update()
     {
-        if (adminPanel.InfinityHealthOn == true)
+        if (isAdminPanel == true)
         {
-            _playerHealth.text = "Здоровье: " + "\u221E"; 
+            if (adminPanel.InfinityHealthOn == true)
+            {
+                _playerHealth.text = "Здоровье: " + "\u221E";
+            }
+
+            else
+            {
+                _playerHealth.text = null;
+                _playerHealth.text = "Здоровье: " + PlayerHealth.ToString();
+            }
+
         }
 
-        else
-        {
-            _playerHealth.text = null;
-            _playerHealth.text = "Здоровье: " + PlayerHealth.ToString(); 
-        }
 
         HandleInput();
         HandleCameraRotation();
@@ -131,7 +177,7 @@ public class PlayerController : MonoBehaviour
         if (movementDirection != Vector3.zero)
         {
             movementDirection.Normalize();
-            currentSpeed = isSprinting ? runSpeed: isSneaking ? sneakSpeed: walkSpeed;
+            currentSpeed = isSprinting ? sprintSpeed: isSneaking ? sneakSpeed: runSpeed;
             controller.Move(movementDirection * currentSpeed * Time.fixedDeltaTime);
         }
 
@@ -154,13 +200,22 @@ public class PlayerController : MonoBehaviour
 
     private void HandleCameraRotation()
     {
-        // Если меню паузы активно - не вращаем камеру
         if (CameraLock == true)
             return;
 
         // Получаем ввод мыши
         float mouseX = Input.GetAxis("Mouse X") * rotationSpeed;
         float mouseY = Input.GetAxis("Mouse Y") * rotationSpeed;
+
+        if (_invertingX == true)
+        {
+            mouseX = -mouseX;
+        }
+
+        if (_invertingY == true)
+        {
+            mouseY = -mouseY;
+        }
 
         // Вращение персонажа по горизонтали
         transform.Rotate(Vector3.up, mouseX);

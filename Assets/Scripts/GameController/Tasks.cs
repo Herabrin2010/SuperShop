@@ -46,14 +46,13 @@ public class Tasks : MonoBehaviour
         currentTaskName = itemInfo._name;
         UpdateTaskUI();
 
-        Debug.Log(score_timer.CurrectScore);
     }
 
     public void CompleteTask()
     {
         score_timer.Price();
         GenerateNewTask();
-        score_timer.IfWin();
+        score_timer.TaskComplete();
     }
 
     public void UpdateTaskUI()

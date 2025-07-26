@@ -13,7 +13,7 @@ public class Pause : MonoBehaviour
 
     private KeyRebinder keyRebinder;
 
-    [SerializeField] private GameObject point;
+    [SerializeField] private GameObject[] objectsToClose;
     [SerializeField] private GameObject PausePanel;
     [SerializeField] private GameObject SettingsPanel;
 
@@ -22,13 +22,9 @@ public class Pause : MonoBehaviour
     private RaycastController raycastController;
     private InventoryController inventoryController;
     private PlayerController playerController;
-    private Animator pauseAnimator;
-    private Animator settingsAnimator;
 
     private void Awake()
     {
-        pauseAnimator = PausePanel.GetComponent<Animator>();
-        settingsAnimator = SettingsPanel.GetComponent<Animator>();
         keyRebinder = FindAnyObjectByType<KeyRebinder>();
         raycastController = FindAnyObjectByType<RaycastController>();
         inventoryController = FindAnyObjectByType<InventoryController>();
@@ -38,7 +34,6 @@ public class Pause : MonoBehaviour
 
     private void Update()
     {
-        updateAnimation();
         if (keyRebinder.GetActionDown("Pause"))
         {
             if (pause == false)
@@ -73,7 +68,10 @@ public class Pause : MonoBehaviour
 
         playerController.CameraLock = true;
 
-        point.gameObject.SetActive(false);
+        foreach (GameObject obj in objectsToClose)
+        {
+            obj.SetActive(false);
+        }
         inventoryController.inventoryFullText.gameObject.SetActive(false);
         raycastController.help.gameObject.SetActive(false);
         inventoryController.inventory.gameObject.SetActive(false);
@@ -90,7 +88,10 @@ public class Pause : MonoBehaviour
 
         playerController.CameraLock = false;
 
-        point.gameObject.SetActive(true);
+        foreach (GameObject obj in objectsToClose)
+        {
+            obj.SetActive(true);
+        }
         inventoryController.inventory.gameObject.SetActive(true);
     }
 
@@ -101,11 +102,5 @@ public class Pause : MonoBehaviour
     public void CloseSettings() 
     { 
         SettingsPanel.gameObject.SetActive(false);
-    }
-
-    private void updateAnimation() 
-    {
-        pauseAnimator.SetBool("Pause", IsPause);
-        settingsAnimator.SetBool("Settings", IsSettings);
     }
 }

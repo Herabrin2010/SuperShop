@@ -9,6 +9,7 @@ TagManager:
   - Floor
   - Door
   - Monster
+  - Portal
   layers:
   - Default
   - TransparentFX

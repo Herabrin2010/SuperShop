@@ -3,135 +3,257 @@ using UnityEngine.AI;
 
 public class MonsterAI : MonoBehaviour
 {
-    [Header("Movement")]
-    public float walkSpeed = 2f;
-    public float runSpeed = 5f;
-    [Tooltip("Дистанция, после которой монстр теряет игрока")]
-    public float loseDistance = 20f;
-
-    [Header("Attack")]
-    public int damage = 10;
+    [Header("Settings")]
+    public float detectionRange = 10f;
+    public float attackRange = 1.5f;
     public float attackCooldown = 2f;
+    public float patrolSpeed = 2f;
+    public float chaseSpeed = 4f;
+    public int damageAmount = 1;
+    public float interestPointDuration = 30f;
+    public float patrolWaitTime = 3f;
 
-    [Tooltip("Дистанция побега после атаки")]
-    public float fleeDistance = 10f;
+    [Header("References")]
+    public LayerMask obstacleLayers;
 
-    [Header("Animations")]
+    [Header ("Links")]
+    private PlayerController playerController;
     private Animator animator;
-    private bool isMoving;
-    private bool isSprinting;
-    private bool attack;
-    private bool alert;
+    private AdminPanel adminPanel;
+
+    [Header ("Bools")]
+    private bool hasInterestPoint = false;
+    private bool isChasing = false;
+    private bool isAttacking = false;
+
+    [Header ("Floats")]
+    private float lastAttackTime;
+    private float interestPointTime;
+    private float patrolTimer;
 
     private Transform player;
     private NavMeshAgent agent;
-    private bool isFleeing;
-    private float lastAttackTime;
-    private PlayerController playerController;
-    private Vector3 movementDirection;
+
+    private Vector3 lastKnownPlayerPosition;
+
 
     private void Start()
     {
-        playerController = GetComponent<PlayerController>();
+        #region Difficulty Settings
+        patrolSpeed = DifficultyManager.Instance.CurrentDifficulty.monserRunSpeed;
+        chaseSpeed = DifficultyManager.Instance.CurrentDifficulty.monserSprintSpeed;
+        detectionRange = DifficultyManager.Instance.CurrentDifficulty.monsterDetectionRange;
+        attackRange = DifficultyManager.Instance.CurrentDifficulty.monsterAttackRange;
+        #endregion
+
+        playerController = FindAnyObjectByType<PlayerController> ();
+        adminPanel = FindAnyObjectByType<AdminPanel>();
         animator = GetComponent<Animator>();
+
         agent = GetComponent<NavMeshAgent>();
-        player = GameObject.FindWithTag("Player").transform;
-        agent.speed = walkSpeed;
+        agent.speed = patrolSpeed;
+        patrolTimer = patrolWaitTime;
+
+        // Автоматически находим игрока по тегу "Player"
+        FindPlayer();
+    }
+
+    private void FindPlayer()
+    {
+        GameObject playerObject = GameObject.FindGameObjectWithTag("Player");
+
+        if (playerObject != null)
+        {
+            player = playerObject.transform;
+        }
+        else
+        {
+            Debug.LogError("Player not found! Make sure the player has the tag 'Player'.");
+        }
     }
 
     private void Update()
     {
-        updateAnimations();
-        if (isFleeing) return;
+        UpdateAnimations();
 
-        float distance = Vector3.Distance(transform.position, player.position);
+        // Если игрок не найден, пропускаем Update
+        if (player == null)
+            return;
 
-        // Режим преследования
-        if (distance < loseDistance && CanSeePlayer())
+        float distanceToPlayer = Vector3.Distance(transform.position, player.position);
+        bool canSeePlayer = CanSeePlayer();
+
+        if (canSeePlayer)
         {
-            ChasePlayer();
-            if (distance <= agent.stoppingDistance && Time.time > lastAttackTime + attackCooldown)
+            lastKnownPlayerPosition = player.position;
+            hasInterestPoint = true;
+            interestPointTime = Time.time;
+
+            if (distanceToPlayer <= attackRange && !isAttacking && Time.time > lastAttackTime + attackCooldown)
             {
-                Attack();
+                AttackPlayer();
+            }
+            else if (distanceToPlayer > attackRange)
+            {
+                ChasePlayer();
+            }
+        }
+        else if (isChasing)
+        {
+            if (Vector3.Distance(transform.position, lastKnownPlayerPosition) < 1f)
+            {
+                StopChasing();
+            }
+            else
+            {
+                agent.SetDestination(lastKnownPlayerPosition);
             }
         }
         else
         {
-            Patrol();
+            PatrolOrInvestigate();
         }
     }
 
     private bool CanSeePlayer()
     {
-        RaycastHit hit;
-        Vector3 direction = player.position - transform.position;
-        if (Physics.Raycast(transform.position, direction, out hit, loseDistance))
+        if (adminPanel.Invisible == true)
+            return false;
+
+        if (Vector3.Distance(transform.position, player.position) > detectionRange)
+            return false;
+
+        Vector3 directionToPlayer = (player.position - transform.position).normalized;
+        float angleToPlayer = Vector3.Angle(transform.forward, directionToPlayer);
+
+        // Проверка угла обзора (например, 120 градусов)
+        if (angleToPlayer > 60f)
+            return false;
+
+        // Проверка на препятствия
+        if (Physics.Raycast(transform.position, directionToPlayer, out RaycastHit hit, detectionRange, obstacleLayers))
         {
-            return hit.transform == player;
+            if (hit.transform != player)
+                return false;
         }
-        return false;
+
+        Debug.Log("Can See Player");
+        return true;
+
+
     }
 
     private void ChasePlayer()
     {
-        agent.speed = runSpeed;
+        Debug.Log("Chase Plauer");
+
+        isChasing = true;
+        isAttacking = false;
+        agent.speed = chaseSpeed;
         agent.SetDestination(player.position);
-        isSprinting = true;
     }
+
+    private void StopChasing()
+    {
+        Debug.Log("Stop Chasing");
+
+        isChasing = false;
+        agent.speed = patrolSpeed;
+    }
+
+    private void AttackPlayer()
+    {
+        Debug.Log("Attack Player");
+
+        isAttacking = true;
+        lastAttackTime = Time.time;
+
+        // Наносим урон игроку
+        playerController.PlayerHealth -= 1;
+
+        // Отступаем после атаки
+        Vector3 retreatDirection = (transform.position - player.position).normalized;
+        agent.SetDestination(transform.position + retreatDirection * 3f);
+
+        Invoke(nameof(ResetAttack), 1f);
+    }
+
+    private void ResetAttack()
+    {
+        Debug.Log("ResetAttack");
+
+        isAttacking = false;
+    }
+
+    private void PatrolOrInvestigate()
+    {
+        // Если есть точка интереса и время еще не истекло
+        if (hasInterestPoint && Time.time < interestPointTime + interestPointDuration)
+        {
+            // С некоторой вероятностью идем к точке интереса
+            if (Random.value > 0.7f || Vector3.Distance(transform.position, agent.destination) < 1f)
+            {
+                agent.SetDestination(lastKnownPlayerPosition + Random.insideUnitSphere * 2f);
+                patrolTimer = patrolWaitTime;
+            }
+            else
+            {
+                // Обычный патруль
+                Patrol();
+            }
+        }
+        else
+        {
+            hasInterestPoint = false;
+            Patrol();
+        }
+    }
+
     private void Patrol()
     {
-        //if (!agent.isOnNavMesh)
-        //{
-        //    // Пытаемся перенести агента на NavMesh
-        //    NavMeshHit hit;
-        //    if (NavMesh.SamplePosition(transform.position, out hit, 2.0f, NavMesh.AllAreas))
-        //    {
-        //        agent.Warp(hit.position); // Телепортация на валидную позицию
-        //    }
-        //    return;
-        //}
+        Debug.Log("Patrol");
 
-        //if (agent.remainingDistance < 1f)
-        //{
-        //    Vector3 randomPoint = transform.position + Random.insideUnitSphere * 10f;
-        //    NavMeshHit hit;
-        //    if (NavMesh.SamplePosition(randomPoint, out hit, 10f, NavMesh.AllAreas))
-        //    {
-        //        agent.SetDestination(hit.position);
-        //    }
-        //}
+        if (!agent.pathPending && (agent.remainingDistance < 1f || patrolTimer <= 0f))
+        {
+            patrolTimer = patrolWaitTime;
+            Vector3 randomPoint = Random.insideUnitSphere * 10f;
+            randomPoint += transform.position;
+
+            if (NavMesh.SamplePosition(randomPoint, out NavMeshHit hit, 10f, NavMesh.AllAreas))
+            {
+                agent.SetDestination(hit.position);
+            }
+        }
+        else
+        {
+            patrolTimer -= Time.deltaTime;
+        }
     }
 
-    private void Attack()
+    private void OnDrawGizmosSelected()
     {
-        lastAttackTime = Time.time;
-        playerController.PlayerHealth -= damage;
-        StartCoroutine(Flee());
-        attack = true;
+        // Визуализация зоны обнаружения
+        Gizmos.color = Color.yellow;
+        Gizmos.DrawWireSphere(transform.position, detectionRange);
+
+        // Визуализация зоны атаки
+        Gizmos.color = Color.red;
+        Gizmos.DrawWireSphere(transform.position, attackRange);
+
+        // Визуализация последней известной позиции
+        if (hasInterestPoint)
+        {
+            Gizmos.color = Color.magenta;
+            Gizmos.DrawSphere(lastKnownPlayerPosition, 0.5f);
+        }
     }
-
-    private System.Collections.IEnumerator Flee()
+    private void UpdateAnimations()
     {
-        isFleeing = true;
-
-        Vector3 fleeDirection = (transform.position - player.position).normalized;
-        agent.SetDestination(transform.position + fleeDirection * fleeDistance);
-        agent.speed = runSpeed;
-
-        yield return new WaitForSeconds(3f); // Длительность бегства
-
-        isFleeing = false;
-    }
-
-    private void updateAnimations()
-    {
-
-        bool isMoving = movementDirection != Vector3.zero;
-        bool isActuallySprinting = isMoving && isSprinting;
+        bool isMoving = agent.velocity.magnitude > 0.1f;
+        bool isActuallySprinting = isMoving && isChasing;
 
         animator.SetBool("IsMoving", isMoving);
-        animator.SetBool("IsSprinting", isSprinting);
-        animator.SetBool("Attack", attack);
-        animator.SetBool("Alert", alert);
+        animator.SetBool("IsSprinting", isActuallySprinting);
+        animator.SetBool("Attack", false); // Сбрасываем атаку после кадра
     }
 }

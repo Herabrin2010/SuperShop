@@ -19,28 +19,4 @@ public class GameController : MonoBehaviour
     {
         Application.Quit();
     }
-    public void SaveGame()
-    {
-        SaveSystem.SaveGame();
-        // ћожно добавить сообщение об успешном сохранении
-    }
-    public void LoadGame()
-    {
-        if (SaveSystem.SaveExists())
-        {
-            SaveSystem.LoadGame();
-            // ћожно добавить сообщение об успешной загрузке
-        }
-        else
-        {
-            Debug.Log("Ќет сохранений дл€ загрузки");
-            // ѕоказать сообщение игроку
-        }
-    }
-
-    public void DeleteSave()
-    {
-        SaveSystem.DeleteSave();
-        // ћожно добавить сообщение об удалении сохранени€
-    }
 }

@@ -66,10 +66,95 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 919132149155446097, guid: 30e4636a3da8cbe4fa1a4b133bc5e479, type: 3}
       propertyPath: m_Name
-      value: Monster (1)
+      value: Monster
+      objectReference: {fileID: 0}
+    - target: {fileID: 919132149155446097, guid: 30e4636a3da8cbe4fa1a4b133bc5e479, type: 3}
+      propertyPath: m_TagString
+      value: Monster
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
-    m_AddedComponents: []
+    m_AddedComponents:
+    - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: 30e4636a3da8cbe4fa1a4b133bc5e479, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 764207139997074292}
+    - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: 30e4636a3da8cbe4fa1a4b133bc5e479, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: -1209455434908065911}
+    - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: 30e4636a3da8cbe4fa1a4b133bc5e479, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: -6958497979457706385}
   m_SourcePrefab: {fileID: 100100000, guid: 30e4636a3da8cbe4fa1a4b133bc5e479, type: 3}
+--- !u!1 &4798160811793513927 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 919132149155446097, guid: 30e4636a3da8cbe4fa1a4b133bc5e479, type: 3}
+  m_PrefabInstance: {fileID: 5645002681688506518}
+  m_PrefabAsset: {fileID: 0}
+--- !u!195 &764207139997074292
+NavMeshAgent:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4798160811793513927}
+  m_Enabled: 1
+  m_AgentTypeID: 0
+  m_Radius: 1
+  m_Speed: 3.5
+  m_Acceleration: 8
+  avoidancePriority: 50
+  m_AngularSpeed: 140
+  m_StoppingDistance: 0.1
+  m_AutoTraverseOffMeshLink: 1
+  m_AutoBraking: 1
+  m_AutoRepath: 1
+  m_Height: 3
+  m_BaseOffset: 1
+  m_WalkableMask: 4294967295
+  m_ObstacleAvoidanceType: 4
+--- !u!114 &-1209455434908065911
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4798160811793513927}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: df7ef7fbac3df36419cd2eb133657b70, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  detectionRange: 10
+  attackRange: 1.5
+  attackCooldown: 2
+  patrolSpeed: 2
+  chaseSpeed: 4
+  damageAmount: 10
+  interestPointDuration: 30
+  patrolWaitTime: 3
+  obstacleLayers:
+    serializedVersion: 2
+    m_Bits: 8
+--- !u!95 &-6958497979457706385
+Animator:
+  serializedVersion: 7
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4798160811793513927}
+  m_Enabled: 1
+  m_Avatar: {fileID: 0}
+  m_Controller: {fileID: 9100000, guid: ad8967ce42427594fb17ef7e672bd0e8, type: 2}
+  m_CullingMode: 0
+  m_UpdateMode: 0
+  m_ApplyRootMotion: 0
+  m_LinearVelocityBlending: 0
+  m_StabilizeFeet: 0
+  m_AnimatePhysics: 0
+  m_WarningMessage: 
+  m_HasTransformHierarchy: 1
+  m_AllowConstantClipSamplingOptimization: 1
+  m_KeepAnimatorStateOnDisable: 0
+  m_WriteDefaultValuesOnDisable: 0

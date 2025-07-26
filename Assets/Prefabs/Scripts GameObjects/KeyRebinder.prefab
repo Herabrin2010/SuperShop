@@ -1,0 +1,149 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!1 &1025675793853474441
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 7405799921744658097}
+  - component: {fileID: 6677597804133997792}
+  m_Layer: 3
+  m_Name: KeyBindingsManager
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &7405799921744658097
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1025675793853474441}
+  serializedVersion: 2
+  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 757106507656881496}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &6677597804133997792
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1025675793853474441}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 29a0713ea00a4bc438e669cadb0ea6bd, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  keyBindingsData: {fileID: 11400000, guid: 109927aa13fc4734a958bcebb62ff1d2, type: 2}
+--- !u!1 &2838520810276588564
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 757106507656881496}
+  - component: {fileID: 8825920917427993767}
+  m_Layer: 3
+  m_Name: KeyRebinder
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &757106507656881496
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2838520810276588564}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children:
+  - {fileID: 7405799921744658097}
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &8825920917427993767
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2838520810276588564}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 78938c5d40b39b84394f6c5e644ffdc4, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  keyBinds:
+  - actionName: Movement Forward
+    defaultKey: 119
+    bindButton: {fileID: 0}
+    bindText: {fileID: 0}
+    currentKey: 0
+  - actionName: Movement Left
+    defaultKey: 97
+    bindButton: {fileID: 0}
+    bindText: {fileID: 0}
+    currentKey: 0
+  - actionName: Movement Back
+    defaultKey: 115
+    bindButton: {fileID: 0}
+    bindText: {fileID: 0}
+    currentKey: 0
+  - actionName: Movement Right
+    defaultKey: 100
+    bindButton: {fileID: 0}
+    bindText: {fileID: 0}
+    currentKey: 0
+  - actionName: Sprint
+    defaultKey: 304
+    bindButton: {fileID: 0}
+    bindText: {fileID: 0}
+    currentKey: 0
+  - actionName: Jump
+    defaultKey: 32
+    bindButton: {fileID: 0}
+    bindText: {fileID: 0}
+    currentKey: 0
+  - actionName: Pause
+    defaultKey: 27
+    bindButton: {fileID: 0}
+    bindText: {fileID: 0}
+    currentKey: 0
+  - actionName: Interaction
+    defaultKey: 101
+    bindButton: {fileID: 0}
+    bindText: {fileID: 0}
+    currentKey: 0
+  - actionName: Admin
+    defaultKey: 9
+    bindButton: {fileID: 0}
+    bindText: {fileID: 0}
+    currentKey: 0
+  - actionName: Sneek
+    defaultKey: 306
+    bindButton: {fileID: 0}
+    bindText: {fileID: 0}
+    currentKey: 0
+  - actionName: Time&Task
+    defaultKey: 109
+    bindButton: {fileID: 0}
+    bindText: {fileID: 0}
+    currentKey: 0
+  keyBindingsConfig: {fileID: 11400000, guid: 109927aa13fc4734a958bcebb62ff1d2, type: 2}

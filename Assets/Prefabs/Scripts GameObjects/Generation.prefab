@@ -1,0 +1,106 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!1 &8782682584249001313
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 2248750797723871716}
+  - component: {fileID: 5613286232581771814}
+  - component: {fileID: 4428362173537929132}
+  m_Layer: 3
+  m_Name: Generation
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &2248750797723871716
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8782682584249001313}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &5613286232581771814
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8782682584249001313}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d0183400f659088469e434bbd283b2aa, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  wallPrefab: {fileID: 1696381511168304075, guid: e52b59d21be639542a3e348fac2dfa84, type: 3}
+  cornerPrefab: {fileID: 3865521230264534250, guid: ae902b54dbebab340b3093eb7da0dbd0, type: 3}
+  tilePrefab: {fileID: 7207504924402407597, guid: 29e67d2dbd51e084299b6a41616a9514, type: 3}
+  placeholderPredab: {fileID: 337031977430830574, guid: 30092c5984a315546be2cd48dd70cf5c, type: 3}
+  floorPrefab: {fileID: 4239740285643414419, guid: d1e974ba407bf98478534072362a1f75, type: 3}
+  doorPrefab: {fileID: 3956231847443743515, guid: 7ca6d3bb138eceb42a8a34958a861dc4, type: 3}
+  monsterPrefab: {fileID: 4798160811793513927, guid: c5e56b3e30a32d549852b50502f41c11, type: 3}
+  sellboxPrefab: {fileID: 3231323800751295126, guid: 5c84dec07d88975448fef440675d795d, type: 3}
+  generateOnStart: 1
+  generateMonsterOnStart: 1
+  Width: 30
+  Length: 30
+  segmentSize: 10
+  centerBuilding: 1
+  generateTile: 1
+  generatedDoors: []
+  surface: {fileID: 0}
+--- !u!114 &4428362173537929132
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8782682584249001313}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: e3cd33fe98163d5428fbf3d6e2411663, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  itemPrefabs:
+  - {fileID: 5803571574390111427, guid: ae423b0843962454ca43cc8326956a74, type: 3}
+  - {fileID: 7703232886331076704, guid: 10db91c7c338f684fb1d1aa8f2bf9382, type: 3}
+  - {fileID: 8385999474314174630, guid: 62ecabee02927f447a6543ac80a3306f, type: 3}
+  - {fileID: 458477892025000019, guid: 462d19718da6f3949bfc487f69aa4bc7, type: 3}
+  - {fileID: 6832138365016849173, guid: c11ef5ebd85829e4fa9ac5abe6125d86, type: 3}
+  - {fileID: 5922664438844232674, guid: d2c51d739ef04d94898ad8b6a6269e21, type: 3}
+  - {fileID: 8112318235072650072, guid: f5aaf1203327d434aa95fa18fe36f74d, type: 3}
+  - {fileID: 2085886481886025965, guid: ae1530f2ba7ccc04189211da0a9d0069, type: 3}
+  - {fileID: 2674802386201669294, guid: 8f6aa20aa530f2845bae92905b39ac4d, type: 3}
+  - {fileID: 7699503729922157219, guid: 9b91886fe192f4a4a81b011a428c5327, type: 3}
+  - {fileID: 6994684543521770977, guid: 9f69de3617b8c514fa536130c96d595f, type: 3}
+  - {fileID: 310074113033863053, guid: 84c2f1ed88376e049a4d38a497178981, type: 3}
+  spawnChance: 75
+  minItems: 500
+  maxItems: 1000
+  itemScaleRange: {x: 0.75, y: 1.25}
+  itemHeightOffset: 0
+  itemTag: Obj
+  randomRotationY: 1
+  rotationYMin: 0
+  rotationYMax: 360
+  minDistanceFromWalls: 15
+  placementSurfaceMask:
+    serializedVersion: 2
+    m_Bits: 8
+  alignToSurfaceNormal: 1
+  AutoDetectFloorTiles: 1
+  customZones: []
+  spawnedItems: []

@@ -8,13 +8,15 @@ public class RaycastController : MonoBehaviour
     public float interactionDistance = 3f;
     public TextMeshProUGUI help;
 
+    [SerializeField] private bool isStudying = false;
+
     [Header("—сылки")]
     private InventoryController inventoryController;
     private KeyRebinder keyRebinder;
     private KeyBindingsData keyBindingData;
     private Tasks tasks;
-    private MultiCutsceneManager multiCutsceneManager;
     private Generation generation;
+    private OpenDoor _openDoor;
 
     private GameObject currentTarget;
 
@@ -26,12 +28,14 @@ public class RaycastController : MonoBehaviour
         if (playerCamera == null) playerCamera = Camera.main;
         if (help != null) help.gameObject.SetActive(false);
 
-        multiCutsceneManager = FindAnyObjectByType<MultiCutsceneManager>();
+        #region Links
         inventoryController = FindAnyObjectByType<InventoryController>();
         keyRebinder = FindAnyObjectByType<KeyRebinder>();
         keyBindingData = FindAnyObjectByType<KeyBindingsData>();
         tasks = FindAnyObjectByType<Tasks>();
         generation = FindAnyObjectByType<Generation>();
+        _openDoor = FindAnyObjectByType<OpenDoor>();
+        #endregion
 
         if (inventoryController == null) Debug.LogError("InventoryController not found!");
         if (keyRebinder == null) Debug.LogError("KeyRebinder not found!");
@@ -152,13 +156,18 @@ public class RaycastController : MonoBehaviour
 
     private void ClearInventory()
     {
-        multiCutsceneManager.PlayCutscene(1);
         inventoryController.ResetSlots();
     }
 
     private void openDoor() 
     {
-
-        generation.OpenDoor(lastDoorIndex);
+        if (isStudying == true)
+        {
+            _openDoor.openDoor();
+        }
+        else
+        {
+            generation.OpenDoor(lastDoorIndex);
+        }
     }
 }

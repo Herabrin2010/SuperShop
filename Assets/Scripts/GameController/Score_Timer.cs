@@ -10,16 +10,12 @@ public class Score_Timer : MonoBehaviour
     [SerializeField] private GameObject GameOverMenu;
 
     [Header ("Настройки")]
-    public int AddScore;
+    public int AddScore = 1;
     private int currentTimeLeft;
     public int timeLeft;
+    private int scoreToWin;
     [SerializeField] private int TimeToWait;
     [HideInInspector] public int CurrectScore;
-
-    [Header ("Sliders")]
-    [SerializeField] private Slider currectScoreSlider;
-
-    public TextMeshProUGUI valueTextCurrectScore;
 
     [Header ("Тексты")]
     [SerializeField] public TextMeshPro _timeLeft;
@@ -35,19 +31,20 @@ public class Score_Timer : MonoBehaviour
         adminPanel = FindAnyObjectByType<AdminPanel>();
         tasks = FindAnyObjectByType<Tasks>();
         CurrectScore = 0;
+
     }
 
     private void Start()
     {
-        StartCoroutine(GameOverTimer());
-
-        currectScoreSlider.wholeNumbers = true;
-        currectScoreSlider.maxValue = 0;
-        currectScoreSlider.maxValue = 100;
-        currectScoreSlider.onValueChanged.AddListener(UpdateIntValueCurrect);
-
+        #region Difficulty Settings
+        timeLeft = DifficultyManager.Instance.CurrentDifficulty.taskTime;
+        adminPanel._TimeLeft = DifficultyManager.Instance.CurrentDifficulty.taskTime;
+        scoreToWin = DifficultyManager.Instance.CurrentDifficulty.scoreNeed;
+        #endregion
 
         currentTimeLeft = timeLeft;
+        StartCoroutine(GameOverTimer());
+
     }
 
     private void Update()
@@ -55,20 +52,9 @@ public class Score_Timer : MonoBehaviour
         GameOver();
         win();
     }
-    private void UpdateIntValueCurrect(float value)
-    {
-        CurrectScore = (int)value; // Конвертируем float в int
-        if (valueTextCurrectScore != null)
-        {
-            valueTextCurrectScore.text = null;
-            valueTextCurrectScore.text = "Текущий счёт: " + CurrectScore.ToString(); // Обновляем текст
-        }
-            
-    }
-
     public void GameOver()
     {
-        if (timeLeft == 0 || adminPanel.TimerLose == true)
+        if (timeLeft == 0 || adminPanel.GameOver == true)
         {
             _timeLeft.text = "Времени осталось: 0";
             Time.timeScale = 0;
@@ -83,7 +69,7 @@ public class Score_Timer : MonoBehaviour
         }
     }
 
-    public void IfWin()
+    public void TaskComplete()
     {
         StopCoroutine(GameOverTimer());
         CurrectScore += AddScore;
@@ -91,7 +77,7 @@ public class Score_Timer : MonoBehaviour
 
     public IEnumerator GameOverTimer()
     {
-        adminPanel._TimeLeft = timeLeft;
+        timeLeft = adminPanel._TimeLeft;
         for (int i = 0; i < timeLeft; timeLeft--)
         {
             yield return new WaitForSeconds(1);
@@ -109,7 +95,7 @@ public class Score_Timer : MonoBehaviour
     
     private void win()
     {
-        if (CurrectScore == 100)
+        if (CurrectScore == scoreToWin)
         {
             Debug.Log("Win");
         }
