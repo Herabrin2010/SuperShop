@@ -111,9 +111,9 @@ AnimatorStateMachine:
   m_EntryTransitions: []
   m_StateMachineTransitions: {}
   m_StateMachineBehaviours: []
-  m_AnyStatePosition: {x: 270, y: 190, z: 0}
+  m_AnyStatePosition: {x: 950, y: 220, z: 0}
   m_EntryPosition: {x: 50, y: 120, z: 0}
-  m_ExitPosition: {x: 550, y: 260, z: 0}
+  m_ExitPosition: {x: 960, y: 260, z: 0}
   m_ParentStateMachinePosition: {x: 800, y: 20, z: 0}
   m_DefaultState: {fileID: -7900481453218060975}
 --- !u!1101 &-2710643360349246418
@@ -274,6 +274,12 @@ AnimatorController:
     m_DefaultBool: 0
     m_Controller: {fileID: 9100000}
   - m_Name: IsTime&TaskOff
+    m_Type: 4
+    m_DefaultFloat: 0
+    m_DefaultInt: 0
+    m_DefaultBool: 0
+    m_Controller: {fileID: 9100000}
+  - m_Name: IsLaptopOpen
     m_Type: 4
     m_DefaultFloat: 0
     m_DefaultInt: 0

@@ -1142,8 +1142,8 @@ MonoBehaviour:
   minVerticalAngle: -80
   maxVerticalAngle: 70
   rotationSpeed: 5
-  invertingX: 0
-  invertingY: 0
+  _invertingX: 0
+  _invertingY: 0
   CameraLock: 1
   currentCameraRotationX: -180
   isTime_TaskOn: 0

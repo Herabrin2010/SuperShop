@@ -2,19 +2,24 @@ using System;
 using System.Collections.Generic;
 using Unity.AI.Navigation;
 using UnityEngine;
+using static UnityEditor.Experimental.AssetDatabaseExperimental.AssetDatabaseCounters;
 
 public class Generation : MonoBehaviour
 {
     [Header("Prefabs")]
+    #region Building
     [SerializeField] private GameObject wallPrefab;
     [SerializeField] private GameObject cornerPrefab;
     [SerializeField] private GameObject tilePrefab;
     [SerializeField] private GameObject placeholderPredab;
     [SerializeField] private GameObject floorPrefab;
     [SerializeField] private GameObject doorPrefab;
+    #endregion
+    #region Usefull Things
     [SerializeField] private GameObject monsterPrefab;
-    [SerializeField] private GameObject sellboxPrefab;
-    
+    [SerializeField] private GameObject cameraPrefab;
+    #endregion
+
 
     [Header("Settings")]
     [SerializeField] private bool generateOnStart = true;
@@ -23,7 +28,7 @@ public class Generation : MonoBehaviour
     public int Length = 10;
     public float segmentSize = 10f;
 
-    public bool centerBuilding = true;
+    private bool centerBuilding = true;
 
     [Header("Настройки заполнения")]
     [SerializeField] private bool generateTile = true;
@@ -36,6 +41,7 @@ public class Generation : MonoBehaviour
     private List<GameObject> generatedUsefullThings = new List<GameObject>();
     private List<Animator> doorAnimators = new List<Animator>();
     [HideInInspector] public List<GameObject> generatedDoors = new List<GameObject>();
+    [HideInInspector] public List<GameObject> generatedCameras = new List<GameObject>();
 
     [SerializeField] private NavMeshSurface surface;
 
@@ -45,7 +51,7 @@ public class Generation : MonoBehaviour
         {
             GenerateCompleteBuilding();
             bakeNavMesh();
-            generateUsefullThings();
+            generateMonster();
         }
 
         if (surface == null)
@@ -58,16 +64,80 @@ public class Generation : MonoBehaviour
             }
         }
     }
+
     private void Start()
     {
-
         generateMonsterOnStart = DifficultyManager.Instance.CurrentDifficulty.generateMonster;
+    }
+
+    // Метод для получения всех камер из списка префабов
+    public List<Camera> GetAllCamerasFromPrefabs()
+    {
+        List<Camera> camerasList = new List<Camera>();
+
+        // Проверка на null список generatedCameras
+        if (generatedCameras == null)
+        {
+            Debug.LogWarning("GeneratedCameras list is null!");
+            return camerasList;
+        }
+
+        foreach (GameObject prefab in generatedCameras)
+        {
+            // Пропускаем null-префабы
+            if (prefab == null)
+            {
+                Debug.LogWarning("Found null prefab in generatedCameras list");
+                continue;
+            }
+
+            // Ищем все камеры в префабе (включая неактивные)
+            Camera[] foundCameras = prefab.GetComponentsInChildren<Camera>(true);
+
+            if (foundCameras.Length == 0)
+            {
+                Debug.LogWarning($"No cameras found in prefab: {prefab.name}");
+                continue;
+            }
+
+            // Добавляем все найденные камеры
+            foreach (Camera cam in foundCameras)
+            {
+                if (cam != null && !camerasList.Contains(cam))
+                {
+                    camerasList.Add(cam);
+                }
+
+                // В методе GetAllCamerasFromPrefabs() добавляем проверку:
+                if (cam != null && !camerasList.Contains(cam) && cam.gameObject.activeInHierarchy)
+                {
+                    camerasList.Add(cam);
+                }
+            }
+        }
+
+        // Логирование результата
+        if (camerasList.Count == 0)
+        {
+            Debug.LogError("No valid cameras found in any prefabs!");
+        }
+        else
+        {
+            Debug.Log($"Successfully found {camerasList.Count} cameras");
+        }
+
+        return camerasList;
     }
 
     public void OpenDoor(int doorIndex)
     {
-        Animator animator = doorAnimators[doorIndex];
-        animator.SetTrigger("OpenDoor");
+        int leftIndex = doorIndex * 2;
+        int rightIndex = leftIndex + 1;
+
+        Debug.Log(leftIndex);
+        Debug.Log(rightIndex);
+        doorAnimators[leftIndex].SetTrigger("OpenDoor");
+        doorAnimators[rightIndex].SetTrigger("OpenDoor");
     }
 
     public void GenerateCompleteBuilding()
@@ -212,7 +282,6 @@ public class Generation : MonoBehaviour
                         continue;
                     }
 
-
                     else
                     {
                         {
@@ -262,14 +331,50 @@ public class Generation : MonoBehaviour
                         Vector3 doorPos = tilePos;
                         GameObject door = Instantiate(doorPrefab, doorPos, Quaternion.identity, transform);
 
-                        // Получаем и сохраняем Animator
-                        Animator doorAnimator = door.GetComponent<Animator>();
-                        doorAnimators.Add(doorAnimator);
+                        // Получаем аниматоры ЛЕВОЙ и ПРАВОЙ половинок
+                        Transform leftHalf = door.transform.Find("LeftDoor"); // Или используй поиск по тегу
+                        Transform rightHalf = door.transform.Find("RightDoor");
+
+                        Animator leftAnim = leftHalf.GetComponent<Animator>();
+                        Animator rightAnim = rightHalf.GetComponent<Animator>();
+
+                        doorAnimators.Add(leftAnim);
+                        doorAnimators.Add(rightAnim);
 
                         door.transform.rotation = Quaternion.Euler(0, 90 * i, 0);
                         door.name = "Door_" + i.ToString();
                         generatedDoors.Add(door);
                     }
+                }
+            }
+        }
+
+        // Генерация камер
+        for (int x = 0; x < countX; x++)
+        {
+            for (int z = 0; z < countZ; z++)
+            {
+                // Пропускаем центральную зону (где игрок начинает)
+                if (Mathf.Abs(x - centerBuildingX) <= 1 && Mathf.Abs(z - centerBuildingZ) <= 1)
+                    continue;
+
+                // 33% шанс генерации камеры в каждом тайле
+                if (UnityEngine.Random.Range(0, 3) == 0)
+                {
+                    Vector3 cameraPos = startPos + new Vector3(
+                        x * segmentSize + 5,
+                        height + 2f, // Немного выше пола
+                        z * segmentSize + 5
+                    );
+
+                    GameObject camera = Instantiate(cameraPrefab, cameraPos, Quaternion.identity, transform);
+                    camera.transform.rotation = Quaternion.Euler(
+                        15f, // Наклон вниз
+                        UnityEngine.Random.Range(0, 4) * 90f, // Случайное направление
+                        0
+                    );
+                    camera.name = $"Camera_{generatedCameras.Count + 1}";
+                    generatedCameras.Add(camera); // Важно: добавляем в список!
                 }
             }
         }
@@ -359,7 +464,7 @@ public class Generation : MonoBehaviour
         }
     }
 
-    private void generateUsefullThings()
+    private void generateMonster()
     {
         float totalWidth = (Width * segmentSize) / 2;
         float totalLength = (Length * segmentSize) / 2;
@@ -372,10 +477,5 @@ public class Generation : MonoBehaviour
             generatedUsefullThings.Add(monster);
 
         }
-
-        Vector3 sellboxPos = new Vector3(0, 0, 0);
-        GameObject sellbox = Instantiate(sellboxPrefab, sellboxPos, Quaternion.identity, transform);
-        sellbox.name = "Sellbox";
-        generatedUsefullThings.Add(sellbox);
     }
 }

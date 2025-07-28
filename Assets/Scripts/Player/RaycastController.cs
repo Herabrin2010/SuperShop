@@ -12,8 +12,12 @@ public class RaycastController : MonoBehaviour
 
     [Header("Ссылки")]
     private InventoryController inventoryController;
+    private PlayerController playerController;
+    private RaycastController raycastController;
+    private CutsceneManager cutsceneManager;
     private KeyRebinder keyRebinder;
     private KeyBindingsData keyBindingData;
+    private LaptopControll laptopControll;
     private Tasks tasks;
     private Generation generation;
     private OpenDoor _openDoor;
@@ -23,6 +27,8 @@ public class RaycastController : MonoBehaviour
     private GameObject lastHitDoor;
     private int lastDoorIndex = -1;
 
+    private bool isLaptopOpen = false;
+
     private void Start()
     {
         if (playerCamera == null) playerCamera = Camera.main;
@@ -30,8 +36,12 @@ public class RaycastController : MonoBehaviour
 
         #region Links
         inventoryController = FindAnyObjectByType<InventoryController>();
+        playerController = FindAnyObjectByType<PlayerController>();
+        raycastController = FindAnyObjectByType<RaycastController>();
+        cutsceneManager = FindAnyObjectByType<CutsceneManager>();
         keyRebinder = FindAnyObjectByType<KeyRebinder>();
         keyBindingData = FindAnyObjectByType<KeyBindingsData>();
+        laptopControll = FindAnyObjectByType<LaptopControll>();
         tasks = FindAnyObjectByType<Tasks>();
         generation = FindAnyObjectByType<Generation>();
         _openDoor = FindAnyObjectByType<OpenDoor>();
@@ -68,7 +78,7 @@ public class RaycastController : MonoBehaviour
         Ray ray = playerCamera.ViewportPointToRay(new Vector3(0.5f, 0.5f, 0));
         if (Physics.Raycast(ray, out var hit, interactionDistance))
         {
-            lastHitDoor = hit.collider.gameObject;
+            lastHitDoor = hit.collider.transform.parent.gameObject;
             lastDoorIndex = generation.generatedDoors.IndexOf(lastHitDoor);
 
             HandleNewTarget(hit.collider.gameObject);
@@ -95,6 +105,9 @@ public class RaycastController : MonoBehaviour
                 break;
             case "Door":
                 ShowInteractionPrompt($"Нажмите {getInteractionKey()} чтобы открыть дверь");
+                break;
+            case "Laptop":
+                ShowInteractionPrompt($"Нажмите {getInteractionKey()} чтобы открыть ноутбук");
                 break;
         }
     }
@@ -140,6 +153,12 @@ public class RaycastController : MonoBehaviour
             case "Door":
                 openDoor();
                 break;
+            case "Laptop":
+                if (!isLaptopOpen) { openLaptop(); isLaptopOpen = true; }
+                else { closeLaptop(); isLaptopOpen = false; }
+                break;
+
+            
         }
         ClearCurrentTarget();
     }
@@ -169,5 +188,15 @@ public class RaycastController : MonoBehaviour
         {
             generation.OpenDoor(lastDoorIndex);
         }
+    }
+
+    private void openLaptop()
+    {
+        cutsceneManager.PlayCutscene(0);
+    }
+
+    private void closeLaptop()
+    {
+        cutsceneManager.PlayCutscene(1);
     }
 }

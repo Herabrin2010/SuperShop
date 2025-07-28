@@ -16,8 +16,8 @@ public class PlayerController : MonoBehaviour
     [SerializeField] private float sneakSpeed = 2f;
     [SerializeField] private float gravity = -9.81f;
     [SerializeField] private float jumpHeight = 1.5f;
-    [HideInInspector] public bool MovementLock;
-    [HideInInspector] public float currentSpeed;
+    public bool MovementLock;
+    public float currentSpeed;
     private Vector3 movementDirection;
     private Vector3 velocity;
 
@@ -30,8 +30,8 @@ public class PlayerController : MonoBehaviour
     [SerializeField] private bool _invertingX;
     [SerializeField] private bool _invertingY;
 
-    [HideInInspector] public bool CameraLock;
-    [HideInInspector] public float currentCameraRotationX = -180f; // Текущий угол камеры по X
+    public bool CameraLock;
+    public float currentCameraRotationX = -180f; // Текущий угол камеры по X
 
     [Header ("Bools")]
     private bool isGrounded;

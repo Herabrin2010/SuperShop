@@ -35,3 +35,7 @@ MonoBehaviour:
     keyCode: 304
   - actionName: Time&Task
     keyCode: 109
+  - actionName: nextCameraKey
+    keyCode: 275
+  - actionName: 'previousCameraKey '
+    keyCode: 276

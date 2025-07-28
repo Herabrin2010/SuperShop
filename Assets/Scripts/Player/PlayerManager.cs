@@ -15,7 +15,6 @@ public class PlayerManager : MonoBehaviour
     {
         Instance = this;
         PlayerStats = playerStats;
-        DontDestroyOnLoad(Instance);
     }
 
     public void InvertingX()
