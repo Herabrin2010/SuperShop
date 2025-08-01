@@ -3,14 +3,14 @@ using TMPro;
 
 public class RaycastController : MonoBehaviour
 {
-    [Header("Настройки")]
+    [Header("Settings")]
     public Camera playerCamera;
     public float interactionDistance = 3f;
     public TextMeshProUGUI help;
 
     [SerializeField] private bool isStudying = false;
 
-    [Header("Ссылки")]
+    [Header("Links")]
     private InventoryController inventoryController;
     private PlayerController playerController;
     private RaycastController raycastController;
@@ -18,6 +18,7 @@ public class RaycastController : MonoBehaviour
     private KeyRebinder keyRebinder;
     private KeyBindingsData keyBindingData;
     private LaptopControll laptopControll;
+    private ElectricityController electricityController;
     private Tasks tasks;
     private Generation generation;
     private OpenDoor _openDoor;
@@ -27,7 +28,9 @@ public class RaycastController : MonoBehaviour
     private GameObject lastHitDoor;
     private int lastDoorIndex = -1;
 
+    [Header ("Bools")]
     private bool isLaptopOpen = false;
+    private bool isElectricityOn = true;
 
     private void Start()
     {
@@ -42,6 +45,7 @@ public class RaycastController : MonoBehaviour
         keyRebinder = FindAnyObjectByType<KeyRebinder>();
         keyBindingData = FindAnyObjectByType<KeyBindingsData>();
         laptopControll = FindAnyObjectByType<LaptopControll>();
+        electricityController = FindAnyObjectByType<ElectricityController>();
         tasks = FindAnyObjectByType<Tasks>();
         generation = FindAnyObjectByType<Generation>();
         _openDoor = FindAnyObjectByType<OpenDoor>();
@@ -56,6 +60,7 @@ public class RaycastController : MonoBehaviour
     {
         PerformRaycast();
         CheckForInteraction();
+
     }
 
     private string getInteractionKey()
@@ -75,11 +80,30 @@ public class RaycastController : MonoBehaviour
 
     private void PerformRaycast()
     {
+        if (playerCamera == null)
+        {
+            Debug.LogWarning("Player camera is not assigned!");
+            return;
+        }
+
         Ray ray = playerCamera.ViewportPointToRay(new Vector3(0.5f, 0.5f, 0));
         if (Physics.Raycast(ray, out var hit, interactionDistance))
         {
-            lastHitDoor = hit.collider.transform.parent.gameObject;
-            lastDoorIndex = generation.generatedDoors.IndexOf(lastHitDoor);
+            // Проверяем, есть ли родитель у объекта
+            if (hit.collider != null && hit.collider.transform != null && hit.collider.transform.parent != null)
+            {
+                lastHitDoor = hit.collider.transform.parent.gameObject;
+
+                // Проверяем, что generation инициализирован
+                if (generation != null && generation.generatedDoors != null)
+                {
+                    lastDoorIndex = generation.generatedDoors.IndexOf(lastHitDoor);
+                }
+                else
+                {
+                    lastDoorIndex = -1;
+                }
+            }
 
             HandleNewTarget(hit.collider.gameObject);
         }
@@ -107,7 +131,12 @@ public class RaycastController : MonoBehaviour
                 ShowInteractionPrompt($"Нажмите {getInteractionKey()} чтобы открыть дверь");
                 break;
             case "Laptop":
-                ShowInteractionPrompt($"Нажмите {getInteractionKey()} чтобы открыть ноутбук");
+                if (isElectricityOn) ShowInteractionPrompt($"Нажмите {getInteractionKey()} чтобы открыть ноутбук");
+                else if (!isElectricityOn) ShowInteractionPrompt($"Элекричество выключено");
+                break;
+            case "Elfuse":
+                if (isElectricityOn) ShowInteractionPrompt($"Нажмите {getInteractionKey()} чтобы выключить свет");
+                else ShowInteractionPrompt($"Нажмите {getInteractionKey()} чтобы включить свет");
                 break;
         }
     }
@@ -154,10 +183,16 @@ public class RaycastController : MonoBehaviour
                 openDoor();
                 break;
             case "Laptop":
-                if (!isLaptopOpen) { openLaptop(); isLaptopOpen = true; }
-                else { closeLaptop(); isLaptopOpen = false; }
+                if (isElectricityOn)
+                {
+                    if (!isLaptopOpen) { openLaptop(); isLaptopOpen = true; }
+                    else {closeLaptop(); isLaptopOpen = false; }
+                }
                 break;
-
+            case "Elfuse":
+                if (!isElectricityOn) { ternElectricityOn(); isElectricityOn = true; }
+                else { ternElectricityOff(); isElectricityOn = false; }
+                break;
             
         }
         ClearCurrentTarget();
@@ -198,5 +233,17 @@ public class RaycastController : MonoBehaviour
     private void closeLaptop()
     {
         cutsceneManager.PlayCutscene(1);
+    }
+
+    private void ternElectricityOn()
+    {
+        cutsceneManager.PlayCutscene(2);
+    }
+
+    private void ternElectricityOff()
+    {
+        if (cutsceneManager.IsCutscenePlaying) return;
+
+        cutsceneManager.PlayCutscene(3);
     }
 }

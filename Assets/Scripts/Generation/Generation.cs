@@ -35,18 +35,29 @@ public class Generation : MonoBehaviour
 
     [Header("Cписки")]
     private List<GameObject> generatedOutline = new List<GameObject>();
-    private List<GameObject> generatedTiles = new List<GameObject>();
     private List<GameObject> generatedPlaceholder = new List<GameObject>();
     private List<GameObject> generatedFloors = new List<GameObject>();
     private List<GameObject> generatedUsefullThings = new List<GameObject>();
     private List<Animator> doorAnimators = new List<Animator>();
+    [HideInInspector] public List<GameObject> generatedTiles = new List<GameObject>();
     [HideInInspector] public List<GameObject> generatedDoors = new List<GameObject>();
     [HideInInspector] public List<GameObject> generatedCameras = new List<GameObject>();
 
+    [HideInInspector] public List<GameObject> objectsToDisable = new List<GameObject>(); //Список в котором хранятся предметы, которые будут выключаться для оптимизации
+
     [SerializeField] private NavMeshSurface surface;
+
+    [Header ("Links")]
+    private ElectricityController electricityController;
+    private ItemGenerator itemGenerator;
 
     private void Awake()
     {
+        #region Links
+        electricityController = FindAnyObjectByType<ElectricityController>();
+        itemGenerator = FindAnyObjectByType<ItemGenerator>();
+        #endregion
+
         if (generateOnStart)
         {
             GenerateCompleteBuilding();
@@ -63,11 +74,20 @@ public class Generation : MonoBehaviour
                 Debug.Log("NavMeshSurface component added automatically.");
             }
         }
+
+
     }
 
     private void Start()
     {
         generateMonsterOnStart = DifficultyManager.Instance.CurrentDifficulty.generateMonster;
+
+        #region Lists to disable
+        objectsToDisable.AddRange(itemGenerator.spawnedItems);
+        objectsToDisable.AddRange(generatedCameras);
+        objectsToDisable.AddRange(electricityController.LightToGameObject);
+        #endregion
+
     }
 
     // Метод для получения всех камер из списка префабов
@@ -119,7 +139,7 @@ public class Generation : MonoBehaviour
         // Логирование результата
         if (camerasList.Count == 0)
         {
-            Debug.LogError("No valid cameras found in any prefabs!");
+            Debug.Log("No valid cameras found in any prefabs!");
         }
         else
         {
@@ -134,8 +154,6 @@ public class Generation : MonoBehaviour
         int leftIndex = doorIndex * 2;
         int rightIndex = leftIndex + 1;
 
-        Debug.Log(leftIndex);
-        Debug.Log(rightIndex);
         doorAnimators[leftIndex].SetTrigger("OpenDoor");
         doorAnimators[rightIndex].SetTrigger("OpenDoor");
     }
@@ -243,14 +261,7 @@ public class Generation : MonoBehaviour
                 //Центральный тайл
                 if (x == centerBuildingX && z == centerBuildingZ)
                 {
-                    Vector3 tilePos = startPos + new Vector3(x * segmentSize, height, z * segmentSize);
-
-                    GameObject tile = Instantiate(tilePrefab, tilePos, Quaternion.identity, transform);
-                    tile.transform.position = tilePos + new Vector3(5, 0, 5);
-                    tilePos = tilePos + new Vector3(5, 0, 5);
-                    tile.name = "Centre tile";
-                    tile.layer = 3;
-                    generatedTiles.Add(tile);
+                    continue;
                 }
 
                 else
@@ -355,7 +366,7 @@ public class Generation : MonoBehaviour
             for (int z = 0; z < countZ; z++)
             {
                 // Пропускаем центральную зону (где игрок начинает)
-                if (Mathf.Abs(x - centerBuildingX) <= 1 && Mathf.Abs(z - centerBuildingZ) <= 1)
+                if (Math.Abs(x - centerBuildingX) <= 1 && Math.Abs(z - centerBuildingZ) <= 1)
                     continue;
 
                 // 33% шанс генерации камеры в каждом тайле

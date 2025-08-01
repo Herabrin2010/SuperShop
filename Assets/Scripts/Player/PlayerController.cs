@@ -30,7 +30,9 @@ public class PlayerController : MonoBehaviour
     [SerializeField] private bool _invertingX;
     [SerializeField] private bool _invertingY;
 
-    public bool CameraLock;
+    public bool CameraLock = false;
+    public bool CameraLockX = false;
+    public bool CameraLockY = false;
     public float currentCameraRotationX = -180f; // Текущий угол камеры по X
 
     [Header ("Bools")]
@@ -200,12 +202,11 @@ public class PlayerController : MonoBehaviour
 
     private void HandleCameraRotation()
     {
-        if (CameraLock == true)
-            return;
+        if (CameraLock || CameraLockX || CameraLockY) return;
 
         // Получаем ввод мыши
-        float mouseX = Input.GetAxis("Mouse X") * rotationSpeed;
-        float mouseY = Input.GetAxis("Mouse Y") * rotationSpeed;
+        float mouseX = CameraLockX ? 0 : Input.GetAxis("Mouse X") * rotationSpeed;
+        float mouseY = CameraLockY ? 0 : Input.GetAxis("Mouse Y") * rotationSpeed;
 
         if (_invertingX == true)
         {

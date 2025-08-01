@@ -11,6 +11,7 @@ TagManager:
   - Monster
   - Portal
   - Laptop
+  - Elfuse
   layers:
   - Default
   - TransparentFX

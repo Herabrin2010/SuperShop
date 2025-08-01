@@ -268,6 +268,13 @@ public class LaptopControll : MonoBehaviour
         );
     }
 
+    public Camera GetCurrentCamera()
+    {
+        if (currentCameraIndex >= 0 && currentCameraIndex < cameras.Count)
+            return cameras[currentCameraIndex];
+        return null;
+    }
+
     public void OpenLaptop()
     {
         _cameraIndex.gameObject.SetActive(true);

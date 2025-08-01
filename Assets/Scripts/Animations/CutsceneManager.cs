@@ -13,17 +13,9 @@ public class CutsceneManager : MonoBehaviour
         public GameObject cutsceneObject;
         public Camera cutsceneCamera;
         public bool disableMainCamera = true;
-
-        [Tooltip("Срабатывает при начале катсцены")]
         public UnityEvent onCutsceneStart;
-
-        [Tooltip("Срабатывает во время катсцены (можно использовать для синхронизации событий)")]
         public UnityEvent onCutsceneUpdate;
-
-        [Tooltip("Срабатывает при завершении катсцены")]
         public UnityEvent onCutsceneFinished;
-
-        [Tooltip("Длительность катсцены в секундах (0 для автоматического определения)")]
         public float duration;
     }
 
@@ -34,6 +26,8 @@ public class CutsceneManager : MonoBehaviour
     public bool lockPlayerControls = true;
     public bool showDebugLogs = true;
 
+    public bool IsCutscenePlaying { get; private set; }
+
     private PlayerController playerController;
     private Coroutine currentCutsceneRoutine;
     private PlayableDirector currentTimeline;
@@ -41,17 +35,19 @@ public class CutsceneManager : MonoBehaviour
     private void Start()
     {
         playerController = FindAnyObjectByType<PlayerController>();
-
-        mainCamera.gameObject.SetActive(true);
-        mainCamera.tag = "MainCamera";
+        if (mainCamera != null)
+        {
+            mainCamera.gameObject.SetActive(true);
+            mainCamera.tag = "MainCamera";
+        }
     }
 
     public void PlayCutscene(int index)
     {
-        if (currentCutsceneRoutine != null)
+        if (IsCutscenePlaying)
         {
-            StopCoroutine(currentCutsceneRoutine);
-            StopCurrentCutscene();
+            Debug.LogWarning("Cutscene is already playing!");
+            return;
         }
 
         foreach (var cutscene in cutscenes)
@@ -62,24 +58,21 @@ public class CutsceneManager : MonoBehaviour
                 return;
             }
         }
-
         Debug.LogWarning($"Cutscene with index '{index}' not found!");
     }
 
     private IEnumerator PlayCutsceneRoutine(Cutscene cutscene)
     {
-        // Подготовка катсцены
+        IsCutscenePlaying = true;
         LockPlayerControls();
         cutscene.onCutsceneStart.Invoke();
 
-        // Активация объектов катсцены
         if (cutscene.cutsceneObject != null)
         {
             cutscene.cutsceneObject.SetActive(true);
             currentTimeline = cutscene.cutsceneObject.GetComponent<PlayableDirector>();
         }
 
-        // Переключение камер
         if (cutscene.cutsceneCamera != null)
         {
             cutscene.cutsceneCamera.gameObject.SetActive(true);
@@ -90,7 +83,6 @@ public class CutsceneManager : MonoBehaviour
         if (showDebugLogs)
             Debug.Log($"Starting cutscene: {cutscene.name}");
 
-        // Запуск таймера катсцены
         float timer = 0f;
         float duration = cutscene.duration > 0 ? cutscene.duration :
                          currentTimeline != null ? (float)currentTimeline.duration : 0f;
@@ -98,7 +90,7 @@ public class CutsceneManager : MonoBehaviour
         while (duration == 0 || timer < duration)
         {
             timer += Time.deltaTime;
-            cutscene.onCutsceneUpdate.Invoke(); // Событие каждый кадр
+            cutscene.onCutsceneUpdate.Invoke();
 
             if (currentTimeline != null && currentTimeline.state != PlayState.Playing)
                 break;
@@ -106,12 +98,13 @@ public class CutsceneManager : MonoBehaviour
             yield return null;
         }
 
-        // Завершение катсцены
         StopCurrentCutscene();
         cutscene.onCutsceneFinished.Invoke();
 
         if (showDebugLogs)
             Debug.Log($"Finished cutscene: {cutscene.name}");
+
+        IsCutscenePlaying = false;
     }
 
     private void StopCurrentCutscene()
@@ -122,7 +115,25 @@ public class CutsceneManager : MonoBehaviour
             currentTimeline = null;
         }
 
+        RestoreMainCamera();
         UnlockPlayerControls();
+    }
+
+    private void RestoreMainCamera()
+    {
+        if (mainCamera != null && !mainCamera.gameObject.activeSelf)
+        {
+            mainCamera.gameObject.SetActive(true);
+            mainCamera.transform.position = Vector3.zero;
+        }
+
+        foreach (var cutscene in cutscenes)
+        {
+            if (cutscene.cutsceneCamera != null && cutscene.cutsceneCamera.gameObject.activeSelf)
+            {
+                cutscene.cutsceneCamera.gameObject.SetActive(false);
+            }
+        }
     }
 
     private void LockPlayerControls()
@@ -131,8 +142,8 @@ public class CutsceneManager : MonoBehaviour
 
         playerController.CameraLock = true;
         playerController.MovementLock = true;
-        Cursor.lockState = CursorLockMode.None;
-        Cursor.visible = true;
+        playerController.CameraLockX = true;
+        playerController.CameraLockY = true;
     }
 
     private void UnlockPlayerControls()
@@ -141,7 +152,23 @@ public class CutsceneManager : MonoBehaviour
 
         playerController.CameraLock = false;
         playerController.MovementLock = false;
-        Cursor.lockState = CursorLockMode.Locked;
-        Cursor.visible = false;
+        playerController.CameraLockX = false;
+        playerController.CameraLockY = false;
+    }
+
+    private void OnDisable()
+    {
+        if (IsCutscenePlaying)
+        {
+            StopCurrentCutscene();
+            IsCutscenePlaying = false;
+        }
+
+        if (playerController != null)
+        {
+            playerController.CameraLock = false;
+            playerController.CameraLockX = false;
+            playerController.CameraLockY = false;
+        }
     }
 }
