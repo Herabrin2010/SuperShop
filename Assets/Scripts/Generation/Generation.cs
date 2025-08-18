@@ -1,4 +1,5 @@
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using Unity.AI.Navigation;
 using UnityEngine;
@@ -29,6 +30,8 @@ public class Generation : MonoBehaviour
     public float segmentSize = 10f;
 
     private bool centerBuilding = true;
+
+    public bool isCompleteBuilding = false;
 
     [Header("Настройки заполнения")]
     [SerializeField] private bool generateTile = true;
@@ -84,69 +87,21 @@ public class Generation : MonoBehaviour
 
         #region Lists to disable
         objectsToDisable.AddRange(itemGenerator.spawnedItems);
-        objectsToDisable.AddRange(generatedCameras);
         objectsToDisable.AddRange(electricityController.LightToGameObject);
         #endregion
 
+        StartCoroutine(InitializeOptimizationLists());
     }
 
-    // Метод для получения всех камер из списка префабов
-    public List<Camera> GetAllCamerasFromPrefabs()
+    private IEnumerator InitializeOptimizationLists()
     {
-        List<Camera> camerasList = new List<Camera>();
+        yield return new WaitUntil(() => electricityController.LightToGameObject.Count > 0);
 
-        // Проверка на null список generatedCameras
-        if (generatedCameras == null)
-        {
-            Debug.LogWarning("GeneratedCameras list is null!");
-            return camerasList;
-        }
+        objectsToDisable.Clear();
+        objectsToDisable.AddRange(itemGenerator.spawnedItems);
+        objectsToDisable.AddRange(electricityController.LightToGameObject);
 
-        foreach (GameObject prefab in generatedCameras)
-        {
-            // Пропускаем null-префабы
-            if (prefab == null)
-            {
-                Debug.LogWarning("Found null prefab in generatedCameras list");
-                continue;
-            }
-
-            // Ищем все камеры в префабе (включая неактивные)
-            Camera[] foundCameras = prefab.GetComponentsInChildren<Camera>(true);
-
-            if (foundCameras.Length == 0)
-            {
-                Debug.LogWarning($"No cameras found in prefab: {prefab.name}");
-                continue;
-            }
-
-            // Добавляем все найденные камеры
-            foreach (Camera cam in foundCameras)
-            {
-                if (cam != null && !camerasList.Contains(cam))
-                {
-                    camerasList.Add(cam);
-                }
-
-                // В методе GetAllCamerasFromPrefabs() добавляем проверку:
-                if (cam != null && !camerasList.Contains(cam) && cam.gameObject.activeInHierarchy)
-                {
-                    camerasList.Add(cam);
-                }
-            }
-        }
-
-        // Логирование результата
-        if (camerasList.Count == 0)
-        {
-            Debug.Log("No valid cameras found in any prefabs!");
-        }
-        else
-        {
-            Debug.Log($"Successfully found {camerasList.Count} cameras");
-        }
-
-        return camerasList;
+        Debug.Log($"Optimization lists initialized: {objectsToDisable.Count} objects");
     }
 
     public void OpenDoor(int doorIndex)
@@ -358,6 +313,8 @@ public class Generation : MonoBehaviour
                     }
                 }
             }
+
+            isCompleteBuilding = true;
         }
 
         // Генерация камер

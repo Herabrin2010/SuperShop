@@ -50,10 +50,6 @@ public class LaptopControll : MonoBehaviour
 
     private void Start()
     {
-        // Получаем камеры из Generation
-        List<Camera> newCameras = generation.GetAllCamerasFromPrefabs();
-        cameras.Clear();
-        cameras.AddRange(newCameras);
 
         InitializeCameras();
         DisableAllCameras();

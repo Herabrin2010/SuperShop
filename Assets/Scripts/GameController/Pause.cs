@@ -19,12 +19,14 @@ public class Pause : MonoBehaviour
 
 
     [Header ("—сылки")]
+    private AchievementUIManager achievementUIManager;
     private RaycastController raycastController;
     private InventoryController inventoryController;
     private PlayerController playerController;
 
     private void Awake()
     {
+        achievementUIManager = FindAnyObjectByType<AchievementUIManager>();
         keyRebinder = FindAnyObjectByType<KeyRebinder>();
         raycastController = FindAnyObjectByType<RaycastController>();
         inventoryController = FindAnyObjectByType<InventoryController>();
@@ -48,6 +50,13 @@ public class Pause : MonoBehaviour
                     SettingsPanel.SetActive(false);
                     OpenPause();
                 }
+
+                else if (achievementUIManager._achievementPanel.activeSelf)
+                {
+                    achievementUIManager.TogleUI();
+                    OpenPause();
+                }
+
                 else
                 {
                     ClosePause();

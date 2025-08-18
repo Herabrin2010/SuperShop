@@ -1,3 +1,4 @@
+using System.Collections;
 using TMPro;
 using Unity.VisualScripting;
 using UnityEngine;
@@ -5,10 +6,11 @@ using UnityEngine;
 public class PlayerController : MonoBehaviour
 {
     [Header("Ссылки")]
+    [HideInInspector] public CharacterController controller;
     private KeyRebinder keyRebinder;
-    private CharacterController controller;
     private AdminPanel adminPanel;
     private Animator animator;
+    private Score_Timer scoreTimer;
 
     [Header("Movement Settings")]
     [SerializeField] private float runSpeed = 5f;
@@ -44,6 +46,10 @@ public class PlayerController : MonoBehaviour
     [HideInInspector] public bool isTime_TaskOff;
     [HideInInspector] public bool isTime_Task = false;
 
+    private bool isTelekinesisOn;
+    private bool isTelekinesisOff;
+    private bool isTelekinesis = false;
+
     [Header ("Health")]
     public int MaxPlayerHealth = 4;
     public int PlayerHealth;
@@ -53,6 +59,8 @@ public class PlayerController : MonoBehaviour
 
     [SerializeField] private TextMeshPro _playerHealth;
 
+    [SerializeField] private GameObject telekinesisTool;
+
     private void Awake()
     {
 
@@ -61,6 +69,7 @@ public class PlayerController : MonoBehaviour
         controller = GetComponent<CharacterController>();
         animator = GetComponent<Animator>();
         keyRebinder = FindAnyObjectByType<KeyRebinder>();
+        scoreTimer = FindAnyObjectByType<Score_Timer>();
         #endregion
 
         #region Checks
@@ -96,37 +105,38 @@ public class PlayerController : MonoBehaviour
         MaxPlayerHealth = DifficultyManager.Instance.CurrentDifficulty.playerHealth;
         #endregion
     }
-
-
     private void Update()
     {
-        if (isAdminPanel == true)
+        if (adminPanel.InfinityHealthOn)
         {
-            if (adminPanel.InfinityHealthOn == true)
-            {
-                _playerHealth.text = "Здоровье: " + "\u221E";
-            }
-
-            else
-            {
-                _playerHealth.text = null;
-                _playerHealth.text = "Здоровье: " + PlayerHealth.ToString();
-            }
-
+            _playerHealth.text = "Здоровье: " + "\u221E";
         }
 
+        else if (!adminPanel.InfinityHealthOn)
+        {
+            _playerHealth.text = null;
+            _playerHealth.text = "Здоровье: " + PlayerHealth.ToString();
+        }
 
-        HandleInput();
-        HandleCameraRotation();
-        UpdateAnimations();
+        if (transform.position.y <= -15) { transform.position = new Vector3(2, 0, 0); scoreTimer.TimeLeft = 0; }
+
+        handleInput();
+        handleCameraRotation();
+        updateAnimations();
     }
 
     private void FixedUpdate()
     {
-        HandleMovement();
-        HandleGravity();
+        handleMovement();
+        handleGravity();
     }
-    private void HandleInput()
+
+    public void openTelekinesis()
+    {
+        AchievementManager.Instance.UnlockAchievement("TakeTelekinesis");
+    }
+
+    private void handleInput()
     {
         isGrounded = controller.isGrounded;
 
@@ -143,22 +153,44 @@ public class PlayerController : MonoBehaviour
 
         if (keyRebinder.GetActionDown("Time&Task"))
         {
-            if (isTime_Task == false)
+            if (!isTime_Task)
             {
                 isTime_Task = true;
                 isTime_TaskOn = true;
                 isTime_TaskOff = false;
             }
-            else if (isTime_Task == true)
+            else if (isTime_Task)
             {
                 isTime_Task = false;
                 isTime_TaskOn = false;
                 isTime_TaskOff = true;
             }
         }
+
+        if (AchievementManager.Instance.IsAchievementUnlocked("TakeTelekinesis"))
+        {
+            telekinesisTool.SetActive(true);
+
+            if (keyRebinder.GetActionDown("Telekinesis"))
+            {
+                if (!isTelekinesis)
+                {
+                    isTelekinesis = true;
+                    isTelekinesisOn = true;
+                    isTelekinesisOff = false;
+                }
+
+                else if (isTelekinesis)
+                {
+                    isTelekinesis = false;
+                    isTelekinesisOn = false;
+                    isTelekinesisOff = true;
+                }
+            }
+        }
     }
 
-    private void HandleMovement()
+    private void handleMovement()
     {
         if (MovementLock == true)
         {
@@ -183,6 +215,9 @@ public class PlayerController : MonoBehaviour
             controller.Move(movementDirection * currentSpeed * Time.fixedDeltaTime);
         }
 
+        // От проваливания в лифте
+        if (isGrounded) controller.Move(Vector3.down * 1 * Time.fixedDeltaTime);
+
         // Прыжок
         if (keyRebinder.GetActionDown("Jump") && isGrounded)
         {
@@ -191,7 +226,7 @@ public class PlayerController : MonoBehaviour
         }
     }
 
-    private void HandleGravity()
+    private void handleGravity()
     {
         if (!isGrounded)
         {
@@ -200,7 +235,7 @@ public class PlayerController : MonoBehaviour
         }
     }
 
-    private void HandleCameraRotation()
+    private void handleCameraRotation()
     {
         if (CameraLock || CameraLockX || CameraLockY) return;
 
@@ -237,7 +272,7 @@ public class PlayerController : MonoBehaviour
         );
     }
 
-    private void UpdateAnimations()
+    private void updateAnimations()
     {
         bool isMoving = movementDirection != Vector3.zero;
         bool isActuallySneaking = isMoving && isSneaking;
@@ -249,6 +284,8 @@ public class PlayerController : MonoBehaviour
         animator.SetBool("IsGrounded", isGrounded);
         animator.SetBool("IsTime&TaskOn", isTime_TaskOn);
         animator.SetBool("IsTime&TaskOff", isTime_TaskOff);
+        animator.SetBool("IsTelekinesisOn", isTelekinesisOn);
+        animator.SetBool("IsTelekinesisOff", isTelekinesisOff);
     }
 
 }

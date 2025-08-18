@@ -14,7 +14,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   difficultyName: Hard
   playerHealth: 3
-  taskTime: 20
+  taskTime: 30
   scoreNeed: 65
   generateMonster: 1
   monserRunSpeed: 6

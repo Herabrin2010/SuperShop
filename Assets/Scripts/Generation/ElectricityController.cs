@@ -49,28 +49,33 @@ public class ElectricityController : MonoBehaviour
 
     private IEnumerator InitializeLights()
     {
-        yield return null;
+        yield return new WaitUntil(() => generation.isCompleteBuilding);
 
         Lights.Clear();
         LightToGameObject.Clear();
 
-        // Add all light sources
+        // Добавляем все источники света из тайлов
         foreach (var tile in generation.generatedTiles)
         {
-            var light = tile.GetComponentInChildren<Light>(true);
-            if (light != null && !Lights.Contains(light))
+            var lights = tile.GetComponentsInChildren<Light>(true);
+            foreach (var light in lights)
             {
-                Lights.Add(light);
-                LightToGameObject.Add(light.gameObject);
+                if (!Lights.Contains(light))
+                {
+                    Lights.Add(light);
+                    LightToGameObject.Add(light.gameObject);
+                    light.gameObject.SetActive(true);
+                    light.enabled = false;
+                }
             }
         }
 
-        // Add central lights
+        // Добавляем центральные света
         if (cetralRoomLights != null)
         {
             foreach (var light in cetralRoomLights)
             {
-                if (light != null && !Lights.Contains(light))
+                if (!Lights.Contains(light))
                 {
                     Lights.Add(light);
                     LightToGameObject.Add(light.gameObject);
@@ -78,11 +83,22 @@ public class ElectricityController : MonoBehaviour
             }
         }
 
-        // Update generation list
+        // Теперь добавляем в общий список
         generation.objectsToDisable.AddRange(LightToGameObject);
-        Debug.Log($"Initialized {Lights.Count} light sources");
+        Debug.Log($"Lights initialized: {Lights.Count} sources added");
     }
 
+    public void RefreshLightStates()
+    {
+        foreach (var light in Lights)
+        {
+            if (light != null)
+            {
+                light.gameObject.SetActive(true);
+                light.enabled = startWithElectricityOn;
+            }
+        }
+    }
 
     private void Start()
     {
@@ -113,38 +129,29 @@ public class ElectricityController : MonoBehaviour
 
     private void SetElectricity(bool state)
     {
-        playerLight.gameObject.SetActive(state);
+        startWithElectricityOn = state;
+
+        // Обновляем состояние всех источников света
+        foreach (var light in Lights)
+        {
+            if (light != null)
+            {
+                light.enabled = state;
+            }
+        }
 
         // Обрабатываем все световые элементы
         foreach (Renderer renderer in lightRenderers)
         {
-
-            if (renderer == null) continue; // Пропускаем null
+            if (renderer == null) continue;
 
             Material[] materials = renderer.materials;
-            if (materials.Length > 1) // Проверяем, есть ли второй материал
+            if (materials.Length > 1)
             {
-                // Меняем материал
                 materials[1] = state ? lightOnMaterial : lightOffMaterial;
                 materials[1].globalIlluminationFlags = MaterialGlobalIlluminationFlags.RealtimeEmissive;
-
-                // Важно: присваиваем массив обратно!
                 renderer.materials = materials;
-
-                // Принудительно обновляем освещение (на всякий случай)
                 RendererExtensions.UpdateGIMaterials(renderer);
-            }
-            else
-            {
-                Debug.LogWarning($"У объекта {renderer.gameObject.name} нет второго материала!", renderer.gameObject);
-            }
-        }
-
-        if (Lights.Count > 0)
-        {
-            for (int i = 0; i < Lights.Count; i++)
-            {
-                Lights[i].gameObject.SetActive(state);
             }
         }
 
@@ -159,22 +166,14 @@ public class ElectricityController : MonoBehaviour
         mainCamera.backgroundColor = state ? oroginalBacroundColor : Color.black;
     }
 
-    public void TurnLightOn()
-    {
-        SetElectricity(true);
-    }
-
     public void TurnLightOff()
     {
         SetElectricity(false);
+        // Не нужно принудительно отключать объекты, этим займется OptimizeObjectsAroundPlayer
+    }
 
-        // Force disable all lights immediately
-        foreach (var lightObj in LightToGameObject)
-        {
-            if (lightObj != null && lightObj.TryGetComponent<Light>(out _))
-            {
-                lightObj.SetActive(false);
-            }
-        }
+    public void TurnLightOn()
+    {
+        SetElectricity(true);
     }
 }

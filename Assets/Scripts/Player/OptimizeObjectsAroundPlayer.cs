@@ -10,12 +10,12 @@ public class OptimizeObjectsAroundPlayer : MonoBehaviour
 
     [Tooltip("Радиус, в котором объекты остаются включенными")]
     [SerializeField] private float activeRadius = 15f;
-    private float activeRadiusSqr; // Квадрат радиуса для оптимизации
+    private float activeRadiusSqr;
 
     [Tooltip("Игрок (если не задан, ищет по тегу 'Player')")]
     [SerializeField] private Transform player;
 
-    [Header ("Links")]
+    [Header("Links")]
     private Generation generation;
     private LaptopControll laptopControll;
     private ElectricityController electricityController;
@@ -26,21 +26,20 @@ public class OptimizeObjectsAroundPlayer : MonoBehaviour
         generation = FindAnyObjectByType<Generation>();
         laptopControll = FindAnyObjectByType<LaptopControll>();
         electricityController = FindAnyObjectByType<ElectricityController>();
-        
         #endregion
 
         activeRadiusSqr = activeRadius * activeRadius;
-
         StartCoroutine(InitializeObjects());
     }
 
-
     private IEnumerator InitializeObjects()
     {
-        while (generation == null || generation.objectsToDisable == null || generation.objectsToDisable.Count == 0)
-        {
-            yield return null;
-        }
+        // Ждем пока Generation и ElectricityController полностью инициализируются
+        yield return new WaitUntil(() =>
+            generation != null &&
+            generation.isCompleteBuilding &&
+            electricityController != null &&
+            electricityController.LightToGameObject.Count > 0);
 
         objectsToDisable = new List<GameObject>(generation.objectsToDisable);
 
@@ -49,46 +48,32 @@ public class OptimizeObjectsAroundPlayer : MonoBehaviour
             player = GameObject.FindGameObjectWithTag("Player")?.transform;
             if (player == null) Debug.LogError("Player not found!");
         }
+
+        Debug.Log($"Optimizer initialized with {objectsToDisable.Count} objects");
     }
 
     private void Update()
     {
-        if (player == null) return;
+        if (player == null || electricityController == null) return;
 
+        bool electricityOn = electricityController.startWithElectricityOn;
         objectsToDisable.RemoveAll(obj => obj == null);
-        Camera activeCamera = laptopControll?.GetCurrentCamera();
-        bool electricityOn = electricityController?.startWithElectricityOn ?? true;
 
         foreach (var obj in objectsToDisable)
         {
             if (obj == null) continue;
 
-            // Camera handling
-            if (obj.TryGetComponent<Camera>(out var cam))
-            {
-                bool shouldBeCameraActive = (cam == activeCamera);
-                if (cam.gameObject.activeSelf != shouldBeCameraActive)
-                {
-                    cam.gameObject.SetActive(shouldBeCameraActive);
-                }
-                continue;
-            }
+            bool isInRadius = IsInRadius(obj);
+            bool shouldBeActive = isInRadius && electricityOn;
 
-            // Light handling
             if (obj.TryGetComponent<Light>(out var light))
             {
-                bool shouldBeLightActive = electricityOn && IsInRadius(obj);
-                if (light.gameObject.activeSelf != shouldBeLightActive)
-                {
-                    light.gameObject.SetActive(shouldBeLightActive);
-                }
-                continue;
+                // Управляем только компонентом света, не трогаем активность объекта
+                light.enabled = shouldBeActive;
             }
-
-            // Regular objects
-            bool shouldBeActive = IsInRadius(obj);
-            if (obj.activeSelf != shouldBeActive)
+            else
             {
+                // Обычные объекты
                 obj.SetActive(shouldBeActive);
             }
         }

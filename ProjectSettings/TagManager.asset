@@ -12,6 +12,10 @@ TagManager:
   - Portal
   - Laptop
   - Elfuse
+  - MovingPlatform
+  - Elevator
+  - Storage
+  - TelekinesisTool
   layers:
   - Default
   - TransparentFX
@@ -19,7 +23,7 @@ TagManager:
   - IgnoreNavMesh
   - Water
   - UI
-  - 
+  - MovingPlatform
   - 
   - 
   - 

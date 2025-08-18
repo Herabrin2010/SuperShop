@@ -31,6 +31,7 @@ public class RaycastController : MonoBehaviour
     [Header ("Bools")]
     private bool isLaptopOpen = false;
     private bool isElectricityOn = true;
+    private bool isElevatorOn = false;
 
     private void Start()
     {
@@ -138,6 +139,13 @@ public class RaycastController : MonoBehaviour
                 if (isElectricityOn) ShowInteractionPrompt($"Нажмите {getInteractionKey()} чтобы выключить свет");
                 else ShowInteractionPrompt($"Нажмите {getInteractionKey()} чтобы включить свет");
                 break;
+            case "Elevator":
+                if (isElevatorOn) ShowInteractionPrompt($"Нажмите {getInteractionKey()} чтобы подняться");
+                else ShowInteractionPrompt($"Нажмите {getInteractionKey()} чтобы опуститься");
+                break;
+            case "Storage":
+                ShowInteractionPrompt($"Нажмите {getInteractionKey()} чтобы открыть хранилище");
+                break;
         }
     }
 
@@ -193,13 +201,21 @@ public class RaycastController : MonoBehaviour
                 if (!isElectricityOn) { ternElectricityOn(); isElectricityOn = true; }
                 else { ternElectricityOff(); isElectricityOn = false; }
                 break;
-            
+            case "Elevator":
+                if (!isElevatorOn) { getUp(); isElevatorOn = true; }
+                else { getDown(); isElevatorOn = false; }
+                break;
+            case "Storage":
+                openStotage();
+                break;
         }
         ClearCurrentTarget();
     }
 
     private void PickUpItem()
     {
+        AchievementManager.Instance.UnlockAchievement("TakeFirstItem");
+
         var itemInfo = currentTarget.GetComponent<InformationAboutObject>();
         if (itemInfo != null && inventoryController != null)
         {
@@ -225,25 +241,17 @@ public class RaycastController : MonoBehaviour
         }
     }
 
-    private void openLaptop()
-    {
-        cutsceneManager.PlayCutscene(0);
-    }
+    private void openLaptop() { cutsceneManager.PlayCutscene(0); AchievementManager.Instance.UnlockAchievement("OpenLaptop"); }
 
-    private void closeLaptop()
-    {
-        cutsceneManager.PlayCutscene(1);
-    }
+    private void closeLaptop() { cutsceneManager.PlayCutscene(1); }
 
-    private void ternElectricityOn()
-    {
-        cutsceneManager.PlayCutscene(2);
-    }
+    private void ternElectricityOn() { cutsceneManager.PlayCutscene(2); }
 
-    private void ternElectricityOff()
-    {
-        if (cutsceneManager.IsCutscenePlaying) return;
+    private void ternElectricityOff() { if (cutsceneManager.IsCutscenePlaying) return; cutsceneManager.PlayCutscene(3); AchievementManager.Instance.UnlockAchievement("TernOffElfuse"); }
 
-        cutsceneManager.PlayCutscene(3);
-    }
+    private void getUp() { cutsceneManager.PlayCutscene(4); }
+
+    private void getDown() { cutsceneManager.PlayCutscene(5);}
+
+    private void openStotage() {  cutsceneManager.PlayCutscene(6);}
 }

@@ -13,6 +13,7 @@ public class CutsceneManager : MonoBehaviour
         public GameObject cutsceneObject;
         public Camera cutsceneCamera;
         public bool disableMainCamera = true;
+        public bool lockPlayerControls = true;
         public UnityEvent onCutsceneStart;
         public UnityEvent onCutsceneUpdate;
         public UnityEvent onCutsceneFinished;
@@ -23,7 +24,6 @@ public class CutsceneManager : MonoBehaviour
     public Camera mainCamera;
 
     [Header("Settings")]
-    public bool lockPlayerControls = true;
     public bool showDebugLogs = true;
 
     public bool IsCutscenePlaying { get; private set; }
@@ -112,6 +112,12 @@ public class CutsceneManager : MonoBehaviour
         if (currentTimeline != null)
         {
             currentTimeline.Stop();
+
+            if (currentTimeline.gameObject != null)
+            {
+                currentTimeline.gameObject.SetActive(false);
+            }
+
             currentTimeline = null;
         }
 
@@ -138,7 +144,10 @@ public class CutsceneManager : MonoBehaviour
 
     private void LockPlayerControls()
     {
-        if (!lockPlayerControls || playerController == null) return;
+        foreach (var cutscene in cutscenes)
+        {
+            if (!cutscene.lockPlayerControls || playerController == null) return;
+        }
 
         playerController.CameraLock = true;
         playerController.MovementLock = true;
@@ -148,7 +157,10 @@ public class CutsceneManager : MonoBehaviour
 
     private void UnlockPlayerControls()
     {
-        if (!lockPlayerControls || playerController == null) return;
+        foreach (var cutscene in cutscenes)
+        {
+            if (!cutscene.lockPlayerControls || playerController == null) return;
+        }
 
         playerController.CameraLock = false;
         playerController.MovementLock = false;

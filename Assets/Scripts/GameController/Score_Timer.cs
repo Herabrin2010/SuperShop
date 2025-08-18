@@ -11,10 +11,10 @@ public class Score_Timer : MonoBehaviour
 
     [Header ("Настройки")]
     public int AddScore = 1;
-    private int currentTimeLeft;
-    public int timeLeft;
+    private int originalTimeLeft;
+    public int TimeLeft;
     private int scoreToWin;
-    [SerializeField] private int TimeToWait;
+    [SerializeField] private int timeToWait;
     [HideInInspector] public int CurrectScore;
 
     [Header ("Тексты")]
@@ -22,6 +22,7 @@ public class Score_Timer : MonoBehaviour
 
     [Header ("Ссылки")]
     private AdminPanel adminPanel;
+    private CutsceneManager cutsceneManager;
     private Tasks tasks;
     private PlayerController playerController;
 
@@ -29,6 +30,7 @@ public class Score_Timer : MonoBehaviour
     {
         playerController = FindAnyObjectByType<PlayerController>();
         adminPanel = FindAnyObjectByType<AdminPanel>();
+        cutsceneManager = FindAnyObjectByType<CutsceneManager>();
         tasks = FindAnyObjectByType<Tasks>();
         CurrectScore = 0;
 
@@ -37,12 +39,12 @@ public class Score_Timer : MonoBehaviour
     private void Start()
     {
         #region Difficulty Settings
-        timeLeft = DifficultyManager.Instance.CurrentDifficulty.taskTime;
+        TimeLeft = DifficultyManager.Instance.CurrentDifficulty.taskTime;
         adminPanel._TimeLeft = DifficultyManager.Instance.CurrentDifficulty.taskTime;
         scoreToWin = DifficultyManager.Instance.CurrentDifficulty.scoreNeed;
         #endregion
 
-        currentTimeLeft = timeLeft;
+        originalTimeLeft = TimeLeft;
         StartCoroutine(GameOverTimer());
 
     }
@@ -54,8 +56,12 @@ public class Score_Timer : MonoBehaviour
     }
     public void GameOver()
     {
-        if (timeLeft == 0 || adminPanel.GameOver == true)
+        if (TimeLeft == 0 || adminPanel.GameOver == true)
         {
+            AchievementManager.Instance.UnlockAchievement("DieFirstTime");
+            AchievementManager.Instance.AddProgress("Die10Times");
+            AchievementManager.Instance.AddProgress("Die100Times");
+
             _timeLeft.text = "Времени осталось: 0";
             Time.timeScale = 0;
 
@@ -71,33 +77,44 @@ public class Score_Timer : MonoBehaviour
 
     public void TaskComplete()
     {
+        AchievementManager.Instance.UnlockAchievement("SellFirstItem");
+        AchievementManager.Instance.AddProgress("Sell10Items");
+        AchievementManager.Instance.AddProgress("Sell100Items");
+
         StopCoroutine(GameOverTimer());
         CurrectScore += AddScore;
     }
 
     public IEnumerator GameOverTimer()
     {
-        timeLeft = adminPanel._TimeLeft;
-        for (int i = 0; i < timeLeft; timeLeft--)
+        TimeLeft = adminPanel._TimeLeft;
+        TimeLeft = originalTimeLeft;
+        for (int i = 0; i < TimeLeft; TimeLeft--)
         {
             yield return new WaitForSeconds(1);
             _timeLeft.text = "";
-            _timeLeft.text = "Время: " +  timeLeft.ToString();
+            _timeLeft.text = "Время: " + TimeLeft.ToString();
 
             yield return new WaitUntil(() => adminPanel.TimeStop == false);
-        }
-    }
 
-    public void Price()
-    {
-        CurrectScore += AddScore;
+            if (TimeLeft == originalTimeLeft - 10)
+            {
+                AchievementManager.Instance.UnlockAchievement("GiveItemIn10Seconds");
+            }
+        }
     }
     
     private void win()
     {
         if (CurrectScore == scoreToWin)
         {
-            Debug.Log("Win");
+            AchievementManager.Instance.UnlockAchievement("End");
+            cutsceneManager.PlayCutscene(7);
+
+            if (DifficultyManager.Instance.CurrentDifficulty.name == "Impossible")
+            {
+                AchievementManager.Instance.UnlockAchievement("WinGameInInpossible");
+            }
         }
     }
 }
