@@ -50,7 +50,7 @@ public class Tasks : MonoBehaviour
 
     public void CompleteTask()
     {
-        score_timer.Price();
+        score_timer.CurrectScore += score_timer.AddScore;
         GenerateNewTask();
         score_timer.TaskComplete();
     }

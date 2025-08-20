@@ -1578,7 +1578,7 @@ PrefabInstance:
       objectReference: {fileID: 1198435542}
     - target: {fileID: 2409082736893758361, guid: ec89d4f5c3a37c14998b4863c8b54942, type: 3}
       propertyPath: m_VersionIndex
-      value: 412
+      value: 415
       objectReference: {fileID: 0}
     - target: {fileID: 3177486595026026261, guid: ec89d4f5c3a37c14998b4863c8b54942, type: 3}
       propertyPath: m_Name
@@ -10355,12 +10355,16 @@ PrefabInstance:
       objectReference: {fileID: 3455409912225212567, guid: 5c84dec07d88975448fef440675d795d, type: 3}
     - target: {fileID: 5613286232581771814, guid: 98d6ea768a3ed6a45bba67e7814b0f81, type: 3}
       propertyPath: generateOnStart
-      value: 1
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 5613286232581771814, guid: 98d6ea768a3ed6a45bba67e7814b0f81, type: 3}
       propertyPath: placeholderPredab
       value: 
       objectReference: {fileID: 1042252520405026553, guid: 30092c5984a315546be2cd48dd70cf5c, type: 3}
+    - target: {fileID: 5613286232581771814, guid: 98d6ea768a3ed6a45bba67e7814b0f81, type: 3}
+      propertyPath: generateMonsterOnStart
+      value: 1
+      objectReference: {fileID: 0}
     - target: {fileID: 8782682584249001313, guid: 98d6ea768a3ed6a45bba67e7814b0f81, type: 3}
       propertyPath: m_Name
       value: Generation
